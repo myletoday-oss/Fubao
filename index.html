@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SSchoolBio — Blue Dark (50 câu) — Role: Teacher Gate</title>
+<title>SSchoolBio — Blue Dark (50 câu) — Full</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -28,7 +28,7 @@ header{
   box-shadow:0 6px 18px rgba(0,0,0,0.35);
 }
 .container{max-width:1100px;margin:20px auto;padding:18px;background:rgba(255,255,255,0.03);border-radius:12px}
-.nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 button{cursor:pointer;border:0;padding:10px 14px;border-radius:8px;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;font-weight:600}
 button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.08)}
 button.small{padding:6px 8px;font-size:13px}
@@ -36,7 +36,7 @@ button.small{padding:6px 8px;font-size:13px}
 .col{flex:1;min-width:300px}
 .card{padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));border:1px solid rgba(255,255,255,0.04);margin-bottom:12px;box-shadow:0 6px 20px rgba(0,0,0,0.45)}
 label{display:block;margin-top:8px;font-size:13px;color:var(--muted)}
-input[type=text],select,textarea,input[type=number]{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text)}
+input[type=text],select,textarea,input[type=number],input[type=password]{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text)}
 .q-list .q{border-left:4px solid var(--accent);padding:10px;margin:8px 0;border-radius:6px;background:rgba(0,0,0,0.18)}
 .small{font-size:13px;color:var(--muted)}
 .bar{height:12px;background:#07243a;border-radius:8px;overflow:hidden}
@@ -50,7 +50,8 @@ pre{white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:10px;border-r
 #loginModal .box{background:linear-gradient(180deg,#071427,#0f2742);padding:20px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);width:360px;box-shadow:0 10px 40px rgba(0,0,0,0.6)}
 .label-locked{color:#ffbaba;background:rgba(255,80,80,0.06);padding:8px;border-radius:6px;margin-top:8px;border:1px solid rgba(255,80,80,0.08)}
 .teacher-controls.locked *{pointer-events:none;opacity:0.45}
-.top-right {position: absolute; right: 28px; top: 22px; color: rgba(255,255,255,0.85)}
+.top-right {margin-left:auto}
+h2,h3,h4{color:#e9fbff}
 </style>
 </head>
 <body>
@@ -87,7 +88,6 @@ pre{white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:10px;border-r
   <!-- TEACHER -->
   <div id="view-teacher" class="hidden">
     <div id="teacherLocked" class="card">
-      <!-- This will be replaced/hidden when teacher logged in -->
       <h4>Khu vực Giáo viên</h4>
       <p class="small">Chỉ giáo viên mới được phép xem và quản lý ngân hàng câu hỏi. Vui lòng <strong>đăng nhập</strong> để tiếp tục.</p>
       <div style="margin-top:10px">
@@ -216,41 +216,138 @@ pre{white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:10px;border-r
 </div>
 
 <script>
-/* ===== Role-based access additions =====
-   - Simple teacher auth with password stored in code (default 'teacher123').
-   - Role persisted in localStorage key 'ssbio_role' = 'teacher' | 'student' | null
-   - Teacher-only UI elements disabled/hidden when not authenticated
-*/
+/* ===== Full App: Role-based + PRELOADED 50 + Student logic ===== */
 
-/* ===== Storage & initial data (PRELOADED = 50 câu, as before) ===== */
+/* Keys */
 const KEY = 'ssbio_v2';
 const ROLE_KEY = 'ssbio_role';
-let state = { questions: [], quizzes: [], results: [] };
+
+/* Role state */
 let isTeacher = (localStorage.getItem(ROLE_KEY) === 'teacher');
 
-/* Preloaded 50 câu (same as before) */
+/* App state */
+let state = { questions: [], quizzes: [], results: [] };
+
+/* PRELOADED 50 câu (Miễn dịch, Bài tiết, Cảm ứng) */
 const PRELOADED = [
-  /* (50 question objects identical to previous message) */
+  // Miễn dịch (1..20)
   {id:'q1', topic:'Miễn dịch', type:'mcq', level:'Nhận biết',
    question:'Miễn dịch là gì?', options:['Khả năng chống lại tác nhân gây bệnh','Quá trình tạo tế bào mới','Quá trình quang hợp','Sự trao đổi khí'], answer:0, source:'Bài 12'},
-  /* ... SNIPPED for brevity in code listing here, but in the actual file the full 50 items must be present ... */
+  {id:'q2', topic:'Miễn dịch', type:'mcq', level:'Nhận biết',
+   question:'Miễn dịch không đặc hiệu có đặc điểm nào?', options:['Bẩm sinh, không cần tiếp xúc kháng nguyên','Chỉ xảy ra khi có kháng nguyên','Được nhớ lâu dài','Chỉ có ở người'], answer:0, source:'Bài 12'},
+  {id:'q3', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu',
+   question:'Miễn dịch đặc hiệu gồm những loại chính nào?', options:['Dịch thể và trung gian tế bào','Miễn dịch không đặc hiệu và miễn dịch bẩm sinh','Tế bào và mô','Kháng nguyên và kháng thể'], answer:0, source:'Bài 12'},
+  {id:'q4', topic:'Miễn dịch', type:'mcq', level:'Nhận biết',
+   question:'Vai trò chính của vaccine là?', options:['Tạo miễn dịch chủ động','Gây bệnh để tăng sức đề kháng','Tiêu diệt vi khuẩn ngay lập tức','Thay thế kháng sinh'], answer:0, source:'Bài 12'},
+  {id:'q5', topic:'Miễn dịch', type:'tf', level:'Nhận biết',
+   question:'Dị ứng là phản ứng quá mức của cơ thể với một dị nguyên. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 12'},
+  {id:'q6', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu',
+   question:'Phản ứng phản vệ nghiêm trọng có thể dẫn đến?', options:['Sốc phản vệ và giảm huyết áp','Tăng sinh trưởng','Tăng miễn dịch vĩnh viễn','Tăng nhiệt độ da'], answer:0, source:'Bài 12'},
+  {id:'q7', topic:'Miễn dịch', type:'mcq', level:'Nhận biết',
+   question:'Kháng thể được sản xuất bởi tế bào nào?', options:['Lympho B','Lympho T','Đại thực bào','Tiểu cầu'], answer:0, source:'Bài 12'},
+  {id:'q8', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu',
+   question:'Miễn dịch thụ động khác miễn dịch chủ động ở điểm nào?', options:['Nhận kháng thể từ ngoài, tồn tại ngắn hạn','Tạo trí nhớ miễn dịch','Gây miễn dịch suốt đời','Không liên quan đến kháng thể'], answer:0, source:'Bài 12'},
+  {id:'q9', topic:'Miễn dịch', type:'mcq', level:'Nhận biết',
+   question:'Một số bệnh như sởi thường chỉ mắc một lần vì?', options:['Hình thành trí nhớ miễn dịch','Virus bị tiêu diệt hoàn toàn','Do thuốc kháng sinh','Do vệ sinh môi trường'], answer:0, source:'Bài 12'},
+  {id:'q10', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu',
+   question:'Hiện tượng tự miễn là gì?', options:['Cơ thể tấn công chính mô của mình','Miễn dịch chống lại vi khuẩn','Miễn dịch do vắc xin','Miễn dịch không đặc hiệu'], answer:0, source:'Bài 12'},
+  {id:'q11', topic:'Miễn dịch', type:'tf', level:'Nhận biết',
+   question:'Globulin miễn dịch (RIG) được dùng để tạo miễn dịch chủ động sau phơi nhiễm dại. (Đúng/Sai)', options:['Đúng','Sai'], answer:1, source:'Bài 12'},
+  {id:'q12', topic:'Miễn dịch', type:'mcq', level:'Vận dụng',
+   question:'Thử phản ứng kháng sinh nhằm mục đích?', options:['Phát hiện nguy cơ dị ứng để tránh sốc phản vệ','Tăng tác dụng kháng sinh','Tạo miễn dịch lâu dài','Làm thay đổi gen vi khuẩn'], answer:0, source:'Bài 12'},
+  {id:'q13', topic:'Miễn dịch', type:'mcq', level:'Nhận biết',
+   question:'Thành phần hàng rào bảo vệ bên ngoài cơ thể gồm?', options:['Da, niêm mạc, chất tiết','Lympho T và B','Ti thể','Màng tế bào'], answer:0, source:'Bài 12'},
+  {id:'q14', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu',
+   question:'Interferon trong phản ứng với virus có chức năng?', options:['Kích thích tế bào không bị nhiễm sản xuất protein ức chế nhân lên của virus','Tiêu diệt vi khuẩn','Tăng hấp thu glucose','Kết dính ti thể'], answer:0, source:'Bài 12'},
+  {id:'q15', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu',
+   question:'Sốc phản vệ gây hậu quả nào sau đây?', options:['Co thắt phế quản, giãn mạch, giảm huyết áp','Tăng huyết áp','Tăng thân nhiệt','Giảm tiết dịch'], answer:0, source:'Bài 12'},
+  {id:'q16', topic:'Miễn dịch', type:'mcq', level:'Nhận biết',
+   question:'Kháng nguyên là gì?', options:['Chất lạ kích thích đáp ứng miễn dịch','Kháng thể trong huyết thanh','Tế bào miễn dịch','Enzyme tiêu hóa'], answer:0, source:'Bài 12'},
+  {id:'q17', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu',
+   question:'Miễn dịch cộng đồng (herd immunity) đạt khi tiêm chủng khoảng bao nhiêu % dân số?', options:['70-80%','10-20%','30-40%','100%'], answer:0, source:'Bài 12'},
+  {id:'q18', topic:'Miễn dịch', type:'essay', level:'Vận dụng',
+   question:'Trình bày cơ chế chính của miễn dịch dịch thể và ví dụ lâm sàng.', source:'Bài 12'},
+  {id:'q19', topic:'Miễn dịch', type:'mcq', level:'Nhận biết',
+   question:'Dạng miễn dịch nào tồn tại bẩm sinh?', options:['Miễn dịch không đặc hiệu','Miễn dịch dịch thể','Miễn dịch trung gian tế bào','Miễn dịch thu được'], answer:0, source:'Bài 12'},
+  {id:'q20', topic:'Miễn dịch', type:'tf', level:'Thông hiểu',
+   question:'HIV tấn công tế bào T CD4+. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 12'},
+
+  // Bài tiết & cân bằng nội môi (21..35)
+  {id:'q21', topic:'Bài tiết', type:'mcq', level:'Nhận biết',
+   question:'Quá trình hình thành nước tiểu gồm những giai đoạn nào?', options:['Lọc máu → tái hấp thu → bài tiết → dẫn nước tiểu','Tiêu hóa → hấp thu → bài tiết','Quang hợp → hô hấp → bài tiết','Lọc máu → bài tiết → hấp thu'], answer:0, source:'Bài 13'},
+  {id:'q22', topic:'Bài tiết', type:'mcq', level:'Nhận biết',
+   question:'Nephron là đơn vị chức năng của cơ quan nào?', options:['Thận','Gan','Phổi','Tuyến tụy'], answer:0, source:'Bài 13'},
+  {id:'q23', topic:'Bài tiết', type:'mcq', level:'Thông hiểu',
+   question:'Thận có vai trò chính nào?', options:['Lọc máu và tạo nước tiểu','Tiết enzyme tiêu hóa','Tạo hormone tăng trưởng','Thực hiện quang hợp'], answer:0, source:'Bài 13'},
+  {id:'q24', topic:'Bài tiết', type:'mcq', level:'Nhận biết',
+   question:'Sản phẩm chính bài tiết của hệ hô hấp là gì?', options:['CO2','Ure','Nước tiểu','Glucose'], answer:0, source:'Bài 13'},
+  {id:'q25', topic:'Bài tiết', type:'tf', level:'Thông hiểu',
+   question:'Uống rượu ức chế tuyến yên giải phóng ADH khiến thải nhiều nước tiểu. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 13'},
+  {id:'q26', topic:'Bài tiết', type:'mcq', level:'Thông hiểu',
+   question:'Vai trò chính của cân bằng nội môi là?', options:['Duy trì ổn định môi trường trong cơ thể','Tăng tốc độ tiêu hóa','Làm thay đổi huyết áp liên tục','Giảm chức năng gan'], answer:0, source:'Bài 13'},
+  {id:'q27', topic:'Bài tiết', type:'mcq', level:'Nhận biết',
+   question:'Khi thiếu nước trong cơ thể, áp suất thẩm thấu máu sẽ?', options:['Tăng','Giảm','Không đổi','Về 0'], answer:0, source:'Bài 13'},
+  {id:'q28', topic:'Bài tiết', type:'mcq', level:'Thông hiểu',
+   question:'Cơ quan nào điều hòa nồng độ glucose máu chính?', options:['Tuyến tụy','Thận','Phổi','Tuyến giáp'], answer:0, source:'Bài 13'},
+  {id:'q29', topic:'Bài tiết', type:'mcq', level:'Vận dụng',
+   question:'Quá trình bài tiết nước tiểu: thứ tự nào đúng?', options:['Lọc máu → tái hấp thu → bài tiết → ống dẫn','Tái hấp thu → lọc → bài tiết → ống dẫn','Tiết → lọc → tái hấp thu → ống dẫn','Ống dẫn → lọc → tái hấp thu → bài tiết'], answer:0, source:'Bài 13'},
+  {id:'q30', topic:'Bài tiết', type:'mcq', level:'Nhận biết',
+   question:'Một trong những bệnh của thận là?', options:['Suy thận','Suyễn','Ung thư phổi','Viêm gan'], answer:0, source:'Bài 13'},
+  {id:'q31', topic:'Bài tiết', type:'tf', level:'Nhận biết',
+   question:'Nephron gồm quản cầu thận và ống thận. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 13'},
+  {id:'q32', topic:'Bài tiết', type:'mcq', level:'Thông hiểu',
+   question:'Tại gan có thể chuyển hóa giữa glucose và?', options:['Glycogen','Cholesterol','Protein','Axit béo'], answer:0, source:'Bài 13'},
+  {id:'q33', topic:'Bài tiết', type:'mcq', level:'Vận dụng',
+   question:'Nếu kết quả xét nghiệm glucose máu = 7.5 mmol/L, điều này gợi ý?', options:['Có thể bị tiểu đường','Bình thường','Hạ đường huyết','Không liên quan'], answer:0, source:'Bài 13'},
+  {id:'q34', topic:'Bài tiết', type:'essay', level:'Vận dụng',
+   question:'Giải thích vai trò của thận trong duy trì áp suất thẩm thấu và điều hòa nước.', source:'Bài 13'},
+  {id:'q35', topic:'Bài tiết', type:'mcq', level:'Thông hiểu',
+   question:'Nếu uống quá ít nước lâu dài có thể gây?', options:['Sỏi thận','Nhiễm trùng tai','Tăng cân','Mất trí nhớ'], answer:0, source:'Bài 13'},
+
+  // Cảm ứng (36..50)
+  {id:'q36', topic:'Cảm ứng', type:'mcq', level:'Nhận biết',
+   question:'Cảm ứng là gì?', options:['Thu nhận và trả lời kích thích của môi trường','Sự sinh sản của sinh vật','Sự tiêu hóa thức ăn','Sự phát triển tế bào'], answer:0, source:'Bài 14'},
+  {id:'q37', topic:'Cảm ứng', type:'mcq', level:'Nhận biết',
+   question:'Các giai đoạn cơ bản của cơ chế cảm ứng là?', options:['Thu nhận → dẫn truyền → xử lí → trả lời','Chỉ thu nhận và trả lời','Dẫn truyền → xử lí → thu nhận','Phân chia → tổng hợp → tái hấp thu'], answer:0, source:'Bài 14'},
+  {id:'q38', topic:'Cảm ứng', type:'tf', level:'Nhận biết',
+   question:'Ở người, khi trời nóng cơ thể toát mồ hôi là một ví dụ của cảm ứng. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 14'},
+  {id:'q39', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu',
+   question:'Bộ phận thực hiện trả lời kích thích ở động vật thường là?', options:['Cơ, tuyến','Rễ, thân','Lá, hoa','Màng tế bào'], answer:0, source:'Bài 14'},
+  {id:'q40', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu',
+   question:'Ví dụ về cảm ứng ở thực vật là?', options:['Ngọn cây hướng về ánh sáng','Ăn mồi','Chạy trốn','Tiết nước bọt'], answer:0, source:'Bài 14'},
+  {id:'q41', topic:'Cảm ứng', type:'mcq', level:'Nhận biết',
+   question:'Phản xạ co tay khi chạm vật nóng là bộ phận nào xử lý thông tin?', options:['Tủy sống','Tim','Phổi','Gan'], answer:0, source:'Bài 14'},
+  {id:'q42', topic:'Cảm ứng', type:'mcq', level:'Vận dụng',
+   question:'Sơ đồ thu nhận → dẫn truyền → xử lí → trả lời cho thấy vai trò gì?', options:['Tổ chức phản ứng có thứ tự và chính xác','Không quan trọng','Chỉ xảy ra ở thực vật','Là quá trình tiêu hóa'], answer:0, source:'Bài 14'},
+  {id:'q43', topic:'Cảm ứng', type:'tf', level:'Thông hiểu',
+   question:'Cảm ứng ở động vật diễn ra nhanh hơn cảm ứng ở thực vật. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 14'},
+  {id:'q44', topic:'Cảm ứng', type:'mcq', level:'Nhận biết',
+   question:'Thụ thể cảm nhận kích thích có thể là?', options:['Cơ quan thụ cảm (thụ quan)','Nephron','Lympho B','Màng tế bào'], answer:0, source:'Bài 14'},
+  {id:'q45', topic:'Cảm ứng', type:'essay', level:'Vận dụng',
+   question:'Mô tả sơ lược cơ chế phản xạ và cho ví dụ minh họa trong đời sống.', source:'Bài 14'},
+  {id:'q46', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu',
+   question:'Trong cơ chế cảm ứng, giai đoạn dẫn truyền có nhiệm vụ?', options:['Chuyển tín hiệu từ bộ phận thu nhận đến bộ phận xử lí','Tiết kháng thể','Tạo nước tiểu','Sản xuất glucose'], answer:0, source:'Bài 14'},
+  {id:'q47', topic:'Cảm ứng', type:'mcq', level:'Nhận biết',
+   question:'Ví dụ "hoa mười giờ nở khi có ánh sáng" thuộc dạng nào?', options:['Cảm ứng ở thực vật','Hiện tượng ngẫu nhiên','Bệnh','Quá trình trao đổi chất'], answer:0, source:'Bài 14'},
+  {id:'q48', topic:'Cảm ứng', type:'tf', level:'Nhận biết',
+   question:'Cảm ứng chỉ xảy ra với kích thích từ môi trường ngoài (ngoại thể). (Đúng/Sai)', options:['Đúng','Sai'], answer:1, source:'Bài 14'},
+  {id:'q49', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu',
+   question:'Bộ phận xử lí thông tin ở động vật có hệ thần kinh là?', options:['Não và tủy sống','Gan','Thận','Da'], answer:0, source:'Bài 14'},
+  {id:'q50', topic:'Cảm ứng', type:'mcq', level:'Vận dụng',
+   question:'Phản xạ giật tay khi chạm nóng giúp cơ thể?', options:['Tránh các điều kiện gây hại','Tăng nhiệt','Tạo kháng thể','Tăng hấp thu nước'], answer:0, source:'Bài 14'}
 ];
 
-/* NOTE: For brevity in this displayed snippet I've omitted the full PRELOADED array content.
-   When you paste this into your project, ensure PRELOADED includes the full 50 question objects
-   exactly as in the previous full HTML I provided. */
-
-/* ===== helpers & persistence ===== */
+/* LOAD / SAVE */
 function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
 function load(){ const raw = localStorage.getItem(KEY); if(raw) state = JSON.parse(raw); else state = {questions: PRELOADED.slice(), quizzes: [], results: []}; }
 function ui(id){ return document.getElementById(id); }
 function uid(){ return 'id'+Math.random().toString(36).slice(2,9); }
 function toast(msg, t=2500){ const m = ui('modal'); m.innerText = msg; m.style.display='block'; setTimeout(()=>m.style.display='none', t); }
 
-/* ===== init ===== */
+/* INIT */
 load(); renderRoleUI(); renderAll();
 
-/* ===== Role UI functions ===== */
+/* ROLE UI */
 function setTeacherRole(flag){
   isTeacher = !!flag;
   localStorage.setItem(ROLE_KEY, isTeacher ? 'teacher' : 'student');
@@ -262,52 +359,33 @@ function clearRole(){
   renderRoleUI();
 }
 function renderRoleUI(){
-  // show role label
   const rb = ui('roleBox');
   if(isTeacher) rb.innerHTML = 'Role: <strong>Giáo viên</strong>';
   else rb.innerHTML = 'Role: <strong>Học sinh</strong>';
 
-  // teacher area visibility
   ui('teacherArea').classList.toggle('hidden', !isTeacher);
   ui('teacherLocked').classList.toggle('hidden', isTeacher);
 
-  // protect export/import buttons: only teacher can export/import
   ui('btnExport').disabled = !isTeacher;
   ui('btnImport').disabled = !isTeacher;
   ui('btnExport').classList.toggle('ghost', !isTeacher);
   ui('btnImport').classList.toggle('ghost', !isTeacher);
 
-  // teacher controls locking (visual + pointer-events)
   const tControls = document.querySelectorAll('.teacher-controls');
   tControls.forEach(el => {
-    if(!isTeacher){
-      el.classList.add('locked');
-      el.style.pointerEvents='none'; el.style.opacity='0.5';
-    } else {
-      el.classList.remove('locked');
-      el.style.pointerEvents='auto'; el.style.opacity='1';
-    }
+    if(!isTeacher){ el.classList.add('locked'); el.style.pointerEvents='none'; el.style.opacity='0.5'; }
+    else { el.classList.remove('locked'); el.style.pointerEvents='auto'; el.style.opacity='1'; }
   });
-
-  // update visible view if teacher view is active but not logged in
-  if(!isTeacher && document.getElementById('view-teacher') && !ui('view-teacher').classList.contains('hidden') ){
-    // ensure teacher locked UI visible
-    ui('teacherArea').classList.add('hidden'); ui('teacherLocked').classList.remove('hidden');
-  }
 
   renderQuestionList();
   renderQuizList();
 }
 
-/* ===== Navigation ===== */
+/* NAV */
 ui('nav-home').onclick = ()=>{ showView('home'); }
 ui('nav-teacher').onclick = ()=>{
-  // if already teacher, show teacher view
   if(isTeacher){ showView('teacher'); renderQuestionList(); renderQuizList(); renderTeacherStats(); }
-  else {
-    // open login modal
-    ui('loginModal').style.display='flex';
-  }
+  else { ui('loginModal').style.display='flex'; }
 }
 ui('nav-student').onclick = ()=>{ setStudentView(); }
 function setStudentView(){ setTeacherRole(false); showView('student'); populateQuizSelect(); renderRecent(); renderAnalysis(); }
@@ -315,12 +393,12 @@ function setStudentView(){ setTeacherRole(false); showView('student'); populateQ
 ui('seed').onclick = ()=>{ state.questions = PRELOADED.slice(); state.quizzes = []; state.results = []; save(); toast('Đã nạp dữ liệu mẫu (50 câu)'); renderAll(); }
 ui('btn-reset').onclick = ()=>{ if(!confirm('Xóa toàn bộ dữ liệu lưu trên trình duyệt?')) return; localStorage.removeItem(KEY); localStorage.removeItem(ROLE_KEY); load(); renderAll(); renderRoleUI(); toast('Đã reset'); }
 
-/* ===== Login modal handlers ===== */
+/* LOGIN */
 ui('openLogin').onclick = ()=> ui('loginModal').style.display='flex';
 ui('loginCancel').onclick = ()=> ui('loginModal').style.display='none';
 ui('loginOk').onclick = ()=>{
   const pass = ui('loginPass').value;
-  const REAL_PASS = 'teacher123'; // change here if you want a different password
+  const REAL_PASS = 'teacher123'; // change if needed
   if(pass === REAL_PASS){
     setTeacherRole(true);
     ui('loginModal').style.display='none';
@@ -331,11 +409,11 @@ ui('loginOk').onclick = ()=>{
     alert('Mật khẩu không đúng');
   }
 };
-ui('btnLogout') && (ui('btnLogout').onclick = ()=>{ if(confirm('Đăng xuất khỏi tài khoản Giáo viên?')){ clearRole(); showView('home'); toast('Đã đăng xuất'); } });
+ui('btnLogout').onclick = ()=>{ if(confirm('Đăng xuất khỏi tài khoản Giáo viên?')){ clearRole(); showView('home'); toast('Đã đăng xuất'); } };
 
-/* ===== Teacher: add question (now guarded) ===== */
-ui('q_type') && (ui('q_type').onchange = ()=>{ ui('mcq_area').style.display = ui('q_type').value==='mcq' ? 'block' : 'none'; });
-ui('add_q') && (ui('add_q').onclick = ()=>{
+/* TEACHER: ADD QUESTION */
+ui('q_type').onchange = ()=>{ ui('mcq_area').style.display = ui('q_type').value==='mcq' ? 'block' : 'none'; }
+ui('add_q').onclick = ()=>{
   if(!isTeacher) return alert('Chỉ giáo viên mới được thêm câu hỏi. Vui lòng đăng nhập.');
   const topic = ui('q_topic').value.trim() || 'Chung';
   const type = ui('q_type').value;
@@ -352,9 +430,9 @@ ui('add_q') && (ui('add_q').onclick = ()=>{
   } else { q.type='essay'; }
   state.questions.push(q); save(); renderQuestionList(); toast('Đã thêm câu hỏi');
   ui('q_topic').value=''; ui('q_text').value=''; ui('opt_a').value=''; ui('opt_b').value=''; ui('opt_c').value=''; ui('opt_d').value=''; ui('opt_correct').value=0;
-});
+};
 
-/* ===== render question list (teacher-only content hidden for students) ===== */
+/* RENDER QUESTION LIST (teacher-only) */
 function renderQuestionList(){
   const wrap = ui('q_list'); if(!wrap) return;
   if(!isTeacher){ wrap.innerHTML = '<div class="small label-locked">Chỉ giáo viên mới thấy ngân hàng câu hỏi. Vui lòng đăng nhập.</div>'; return; }
@@ -368,8 +446,8 @@ function renderQuestionList(){
 }
 window.deleteQ = function(id){ if(!isTeacher) return alert('Chỉ giáo viên mới được xóa câu hỏi.'); if(!confirm('Xóa câu hỏi?')) return; state.questions = state.questions.filter(x=>x.id!==id); state.quizzes.forEach(z=>z.qids = z.qids.filter(i=>i!==id)); save(); renderQuestionList(); renderQuizList(); toast('Đã xóa'); };
 
-/* ===== generate quiz (guarded: only teacher can save quizzes) ===== */
-ui('gen_btn') && (ui('gen_btn').onclick = ()=>{
+/* GENERATE QUIZ */
+ui('gen_btn').onclick = ()=>{
   const mcqN = Number(ui('gen_mcq').value)||0;
   const essayN = Number(ui('gen_essay').value)||0;
   const topic = ui('gen_topic').value.trim().toLowerCase();
@@ -383,21 +461,19 @@ ui('gen_btn') && (ui('gen_btn').onclick = ()=>{
   const pick = sample(mcqPool, mcqN).concat(sample(essayPool, essayN));
   ui('gen_preview').innerText = pick.map((q,i)=>`${i+1}. ${q.question} (${q.type})`).join('\n\n');
   ui('save_gen').disabled = false; ui('save_gen').dataset.temp = JSON.stringify(pick.map(q=>q.id));
-});
-ui('save_gen') && (ui('save_gen').onclick = ()=>{
+};
+ui('save_gen').onclick = ()=>{
   if(!isTeacher) return alert('Chỉ giáo viên mới được lưu đề.');
   const ids = JSON.parse(ui('save_gen').dataset.temp || '[]'); if(!ids.length) return alert('Không có đề');
   const title = prompt('Tiêu đề đề thi:', `Đề tự sinh ${new Date().toLocaleString()}`);
   const quiz = { id: uid(), title, qids: ids, created: Date.now() };
   state.quizzes.push(quiz); save(); renderQuizList(); populateQuizSelect(); ui('save_gen').disabled = true; ui('gen_preview').innerText = ''; toast('Đã lưu đề');
-});
+};
 
-/* ===== render quizzes (if not teacher, hide management actions) ===== */
+/* RENDER QUIZZES (teacher-only controls visible only to teacher) */
 function renderQuizList(){
   const wrap = ui('quiz_list'); if(!wrap) return;
-  if(!isTeacher){
-    wrap.innerHTML = '<div class="small label-locked">Chỉ giáo viên mới thấy danh sách đề đã lưu.</div>'; return;
-  }
+  if(!isTeacher){ wrap.innerHTML = '<div class="small label-locked">Chỉ giáo viên mới thấy danh sách đề đã lưu.</div>'; return; }
   if(!state.quizzes.length){ wrap.innerHTML='(chưa có đề)'; return; }
   wrap.innerHTML = state.quizzes.map(z=>{
     return `<div style="margin-bottom:8px"><strong>${escape(z.title)}</strong> <div class="small">(${z.qids.length} câu)</div>
@@ -407,13 +483,142 @@ function renderQuizList(){
 window.preview = function(id){ const z = state.quizzes.find(x=>x.id===id); if(!z) return alert('Không có'); alert('Preview: '+z.qids.map((qid,i)=>`${i+1}. ${(state.questions.find(q=>q.id===qid)||{question:'[đã xóa]'}).question}`).join('\n\n')); }
 window.deleteQuiz = function(id){ if(!isTeacher) return alert('Chỉ giáo viên mới được xóa đề.'); if(!confirm('Xóa đề?')) return; state.quizzes = state.quizzes.filter(x=>x.id!==id); save(); renderQuizList(); populateQuizSelect(); toast('Đã xóa đề'); };
 
-/* ===== student flows unchanged (students cannot create/save/delete quizzes) ===== */
-/* (same student code as before - omitted here for brevity but should be included) */
+/* STUDENT: start & take quiz */
+ui('sample_quiz').onclick = ()=>{ if(!state.quizzes.length) return alert('Chưa có đề. Tạo đề trước.'); ui('stu_name').value='HS mẫu'; ui('select_quiz').value = state.quizzes[0].id; ui('start_quiz').click(); }
+ui('start_quiz').onclick = ()=>{
+  const name = ui('stu_name').value.trim() || 'HS ẩn danh';
+  const qid = ui('select_quiz').value; if(!qid) return alert('Chọn đề trước');
+  const quiz = state.quizzes.find(z=>z.id===qid); if(!quiz) return alert('Đề không tồn tại');
+  const qlist = quiz.qids.map(id=>state.questions.find(q=>q.id===id)).filter(Boolean);
+  window.session = { id: uid(), student: name, quizId: quiz.id, title: quiz.title, questions: qlist, pos:0, answers:{} };
+  showTakeArea(); renderQuestion();
+};
 
-/* For brevity: include the same student start/submit/render logic from the previous full implementation.
-   IMPORTANT: ensure UI interactions do NOT allow students to call teacher-only functions (guards added above). */
+/* render question for student */
+function renderQuestion(){
+  const s = window.session; if(!s) return;
+  ui('take_title').innerText = `${s.title} — ${s.student}`;
+  const q = s.questions[s.pos];
+  let html = `<div><strong>Câu ${s.pos+1} / ${s.questions.length}</strong></div><div style="margin-top:8px"><div class="small"><strong>${escape(q.question)}</strong></div>`;
+  if(q.type==='mcq'){
+    q.options.forEach((opt,i)=>{ const checked = s.answers[q.id]===i ? 'checked' : ''; html += `<label style="display:block;margin-top:8px"><input type="radio" name="ans" value="${i}" ${checked}> ${escape(opt)}</label>`; });
+  } else if(q.type==='tf'){
+    const v = s.answers[q.id] || 0;
+    html += `<label style="display:block;margin-top:8px"><input type="radio" name="ans" value="0" ${v===0?'checked':''}> Đúng</label>`;
+    html += `<label style="display:block;margin-top:8px"><input type="radio" name="ans" value="1" ${v===1?'checked':''}> Sai</label>`;
+  } else {
+    html += `<textarea id="essay_${q.id}" rows="6" style="width:100%;margin-top:8px">${escape(s.answers[q.id]||'')}</textarea>`;
+  }
+  html += `</div>`;
+  ui('question_box').innerHTML = html;
+  ui('prev_btn').onclick = ()=>{ if(s.pos>0){ s.pos--; renderQuestion(); } };
+  ui('next_btn').onclick = ()=>{ if(s.pos < s.questions.length-1){ s.pos++; renderQuestion(); } };
+  if(q.type==='mcq' || q.type==='tf'){
+    document.querySelectorAll('input[name="ans"]').forEach(r=> r.onchange = e=>{ s.answers[q.id] = Number(e.target.value); });
+  } else {
+    const ta = document.getElementById('essay_'+q.id); if(ta) ta.oninput = e=> s.answers[q.id] = e.target.value;
+  }
+  show('take_area');
+}
 
-/* ===== Export / Import JSON (guarded) ===== */
+/* submit quiz (auto-grade MCQ/TF) */
+ui('submit_quiz').onclick = ()=>{
+  if(!confirm('Nộp bài?')) return;
+  const s = window.session; if(!s) return;
+  let correct=0, total=0; const byTopic = {};
+  s.questions.forEach(q=>{
+    if(q.type==='mcq' || q.type==='tf'){
+      total++;
+      const given = s.answers[q.id];
+      const isCorrect = (given !== undefined) && Number(given) === Number(q.answer);
+      if(isCorrect) correct++;
+      if(!byTopic[q.topic]) byTopic[q.topic] = {correct:0,total:0};
+      byTopic[q.topic].total++; if(isCorrect) byTopic[q.topic].correct++;
+    } else {
+      if(!byTopic[q.topic]) byTopic[q.topic] = {correct:0,total:0};
+    }
+  });
+  const pct = total ? Math.round(100*correct/total) : 0;
+  const res = { id: uid(), student: s.student, quizId: s.quizId, title: s.title, score: pct, correct, total, byTopic, timestamp: Date.now() };
+  state.results.push(res); save();
+  toast(`Đã nộp • Điểm MCQ: ${pct}%`);
+  showResult(res);
+  window.session = null; hide('take_area');
+  renderRecent(); renderAnalysis(); renderTeacherStats();
+};
+
+/* show result summary */
+function showResult(r){
+  let html = `${r.student} • ${r.title}\nĐiểm MCQ: ${r.score}% (${r.correct}/${r.total})\n\nTheo chủ đề:\n`;
+  Object.entries(r.byTopic).forEach(([t,st])=>{
+    const pct = st.total ? Math.round(100*st.correct/st.total) : 0;
+    html += `- ${t}: ${pct}% (${st.correct}/${st.total})\n`;
+  });
+  alert(html);
+}
+
+/* UI helpers */
+function showView(which){
+  ui('view-home').classList.toggle('hidden', which!=='home');
+  ui('view-teacher').classList.toggle('hidden', which!=='teacher');
+  ui('view-student').classList.toggle('hidden', which!=='student');
+}
+function show(id){ ui(id).classList.remove('hidden'); }
+function hide(id){ ui(id).classList.add('hidden'); }
+function escape(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function sample(arr,n){ const copy=arr.slice(), res=[]; for(let i=0;i<n;i++){ const j=Math.floor(Math.random()*copy.length); res.push(copy.splice(j,1)[0]); } return res; }
+
+/* Teacher stats & student history */
+function renderTeacherStats(){
+  const wrap = ui('teacher_stats');
+  if(!state.results.length){ wrap.innerHTML='(chưa có kết quả)'; return; }
+  const avg = Math.round(state.results.reduce((s,r)=>s+r.score,0)/state.results.length);
+  const byTopic = {};
+  state.results.forEach(r=> Object.entries(r.byTopic||{}).forEach(([t,st])=>{
+    if(!byTopic[t]) byTopic[t]={correct:0,total:0}; byTopic[t].correct+=st.correct; byTopic[t].total+=st.total;
+  }));
+  let html = `Số lần làm: ${state.results.length} • Điểm trung bình (MCQ): ${avg}%\n`;
+  Object.entries(byTopic).forEach(([t,st])=>{
+    const pct = st.total ? Math.round(100*st.correct/st.total):0;
+    html += `\n${t}: ${pct}% (${st.correct}/${st.total})`;
+  });
+  wrap.innerText = html;
+}
+
+function renderRecent(){
+  const wrap = ui('recent'); if(!state.results.length){ wrap.innerHTML='(chưa có)'; return; }
+  wrap.innerHTML = state.results.slice(-6).reverse().map(r=>`${r.student} • ${r.title} • ${r.score}% • ${new Date(r.timestamp).toLocaleString()}`).join('<br>');
+}
+
+function suggestion(pct){
+  if(pct>=85) return 'Tốt — tiếp tục nâng cao';
+  if(pct>=65) return 'Khá — ôn thêm câu sai';
+  if(pct>=40) return 'Trung bình — ôn lại kiến thức cơ bản';
+  return 'Yếu — cần ôn lại toàn bộ chủ đề';
+}
+
+function renderAnalysis(){
+  const wrap = ui('analysis');
+  const name = ui('stu_name').value.trim();
+  const r = name ? state.results.slice().reverse().find(x=>x.student===name) : state.results.slice().reverse()[0];
+  if(!r){ wrap.innerHTML = 'Chưa có dữ liệu phân tích cho học sinh này.'; return; }
+  let html = `<div class="small">Phân tích: <strong>${escape(r.student)}</strong> • Điểm: <strong>${r.score}%</strong></div>`;
+  Object.entries(r.byTopic).forEach(([t,st])=>{
+    const pct = st.total ? Math.round(100*st.correct/st.total) : 0;
+    html += `<div style="margin-top:8px"><strong>${escape(t)}</strong> — ${pct}% <div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div><div class="small">Gợi ý: ${suggestion(pct)}</div></div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+/* Quiz select */
+function populateQuizSelect(){
+  const sel = ui('select_quiz'); if(!sel) return;
+  sel.innerHTML = '';
+  if(!state.quizzes.length){ sel.innerHTML = '<option value="">(Chưa có đề - giáo viên tạo)</option>'; return; }
+  sel.innerHTML = state.quizzes.map(z=>`<option value="${z.id}">${escape(z.title)}</option>`).join('');
+}
+
+/* Export / Import (guarded) */
 ui('btnExport').onclick = ()=>{
   if(!isTeacher) return alert('Chỉ giáo viên mới được export dữ liệu.');
   const data = JSON.stringify(state, null, 2);
@@ -436,58 +641,20 @@ ui('fileInput').onchange = e=>{
   }; reader.readAsText(f);
 };
 
-/* ===== utilities & renders (keep same behavior) ===== */
-function renderTeacherStats(){
-  const wrap = ui('teacher_stats');
-  if(!state.results.length){ wrap.innerHTML='(chưa có kết quả)'; return; }
-  const avg = Math.round(state.results.reduce((s,r)=>s+r.score,0)/state.results.length);
-  const byTopic = {};
-  state.results.forEach(r=> Object.entries(r.byTopic||{}).forEach(([t,st])=>{ if(!byTopic[t]) byTopic[t]={correct:0,total:0}; byTopic[t].correct+=st.correct; byTopic[t].total+=st.total; }));
-  let html = `Số lần làm: ${state.results.length} • Điểm trung bình (MCQ): ${avg}%\n`;
-  Object.entries(byTopic).forEach(([t,st])=>{ const pct = st.total ? Math.round(100*st.correct/st.total):0; html += `\n${t}: ${pct}% (${st.correct}/${st.total})`; });
-  wrap.innerText = html;
+/* Utils */
+function renderQuizList(){ /* already defined above and used in renderAll() - keep consistency */ renderQuizListInner(); }
+function renderQuizListInner(){
+  const wrap = ui('quiz_list'); if(!wrap) return;
+  if(!isTeacher){ wrap.innerHTML = '<div class="small label-locked">Chỉ giáo viên mới thấy danh sách đề đã lưu.</div>'; return; }
+  if(!state.quizzes.length){ wrap.innerHTML='(chưa có đề)'; return; }
+  wrap.innerHTML = state.quizzes.map(z=>{
+    return `<div style="margin-bottom:8px"><strong>${escape(z.title)}</strong> <div class="small">(${z.qids.length} câu)</div>
+      <div style="margin-top:6px"><button class="ghost small" onclick="preview('${z.id}')">Xem</button> <button class="ghost small" onclick="deleteQuiz('${z.id}')">Xóa</button></div></div>`;
+  }).join('');
 }
 
-function renderRecent(){
-  const wrap = ui('recent'); if(!state.results.length){ wrap.innerHTML='(chưa có)'; return; }
-  wrap.innerHTML = state.results.slice(-6).reverse().map(r=>`${r.student} • ${r.title} • ${r.score}% • ${new Date(r.timestamp).toLocaleString()}`).join('<br>');
-}
-
-function suggestion(pct){
-  if(pct>=85) return 'Tốt — tiếp tục nâng cao';
-  if(pct>=65) return 'Khá — ôn thêm câu sai';
-  if(pct>=40) return 'Trung bình — ôn lại kiến thức cơ bản';
-  return 'Yếu — cần ôn lại toàn bộ chủ đề';
-}
-
-function renderAnalysis(){
-  const wrap = ui('analysis');
-  const name = ui('stu_name').value.trim();
-  const r = name ? state.results.slice().reverse().find(x=>x.student===name) : state.results.slice().reverse()[0];
-  if(!r){ wrap.innerHTML = 'Chưa có dữ liệu phân tích cho học sinh này.'; return; }
-  let html = `<div class="small">Phân tích: <strong>${escape(r.student)}</strong> • Điểm: <strong>${r.score}%</strong></div>`;
-  Object.entries(r.byTopic).forEach(([t,st])=>{ const pct = st.total ? Math.round(100*st.correct/st.total) : 0; html += `<div style="margin-top:8px"><strong>${escape(t)}</strong> — ${pct}% <div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div><div class="small">Gợi ý: ${suggestion(pct)}</div></div>`; });
-  wrap.innerHTML = html;
-}
-
-function populateQuizSelect(){
-  const sel = ui('select_quiz'); if(!sel) return;
-  sel.innerHTML = '';
-  if(!state.quizzes.length){ sel.innerHTML = '<option value="">(Chưa có đề - giáo viên tạo)</option>'; return; }
-  sel.innerHTML = state.quizzes.map(z=>`<option value="${z.id}">${escape(z.title)}</option>`).join('');
-}
-
-function showView(which){
-  ui('view-home').classList.toggle('hidden', which!=='home');
-  ui('view-teacher').classList.toggle('hidden', which!=='teacher');
-  ui('view-student').classList.toggle('hidden', which!=='student');
-}
-function show(id){ ui(id).classList.remove('hidden'); }
-function hide(id){ ui(id).classList.add('hidden'); }
-function escape(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
-function sample(arr,n){ const copy=arr.slice(), res=[]; for(let i=0;i<n;i++){ const j=Math.floor(Math.random()*copy.length); res.push(copy.splice(j,1)[0]); } return res; }
-
-function renderAll(){ renderQuestionList(); renderQuizList(); populateQuizSelect(); renderRecent(); renderAnalysis(); renderTeacherStats(); }
+function renderAll(){ renderQuestionList(); renderQuizListInner(); populateQuizSelect(); renderRecent(); renderAnalysis(); renderTeacherStats(); }
+function showTakeArea(){ show('take_area'); }
 
 /* initial view */
 showView('home');
