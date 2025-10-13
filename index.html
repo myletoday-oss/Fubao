@@ -3,17 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SSchoolBio — Blue Dark (Full, 50 câu)</title>
+<title>SSchoolBio — Full (50 câu) — Blue Dark</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --blue1:#001428;
-  --blue2:#002B55;
-  --accent:#00A8FF;
-  --accent2:#007BFF;
-  --card:#07192b;
-  --text:#EAF8FF;
-  --muted:#9fbcd6;
+  --blue1:#001428; --blue2:#002B55;
+  --accent:#00A8FF; --accent2:#007BFF;
+  --card:#07192b; --text:#EAF8FF; --muted:#9fbcd6;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg,var(--blue1),var(--blue2));color:var(--text);min-height:100vh}
@@ -38,10 +34,8 @@ input[type=text],select,textarea,input[type=number],input[type=password]{width:1
 pre{white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;border:1px dashed rgba(255,255,255,0.04);color:#bfe9ff}
 #modal{position:fixed;right:20px;bottom:20px;width:320px;background:#012033;padding:12px;border-radius:8px;border-left:4px solid var(--accent);box-shadow:0 6px 24px rgba(0,0,0,0.6);display:none}
 #loginModal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;display:none}
-#loginModal .box{background:linear-gradient(180deg,#071427,#0f2742);padding:20px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);width:400px;box-shadow:0 10px 40px rgba(0,0,0,0.6)}
-.label-locked{color:#ffbaba;background:rgba(255,80,80,0.06);padding:8px;border-radius:6px;margin-top:8px;border:1px solid rgba(255,80,80,0.08)}
+#loginModal .box{background:linear-gradient(180deg,#071427,#0f2742);padding:20px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);width:420px;box-shadow:0 10px 40px rgba(0,0,0,0.6)}
 .teacher-controls.locked *{pointer-events:none;opacity:0.45}
-.top-right {margin-left:auto}
 h2,h3,h4{color:#e9fbff}
 </style>
 </head>
@@ -50,7 +44,7 @@ h2,h3,h4{color:#e9fbff}
   <div class="container" style="background:transparent;box-shadow:none;display:flex;justify-content:space-between;align-items:center">
     <div>
       <h2 style="margin:0;font-weight:600">SSchoolBio — Sinh học 11</h2>
-      <div class="small">Ngân hàng câu hỏi & Phân tích năng lực • Demo</div>
+      <div class="small">Ngân hàng câu hỏi & Phân tích năng lực</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <button id="btnExport" class="small ghost">Export JSON</button>
@@ -67,12 +61,12 @@ h2,h3,h4{color:#e9fbff}
     <button id="nav-student" class="ghost">Student</button>
     <button id="btn-reset" class="ghost small">Reset dữ liệu</button>
     <div style="flex:1"></div>
-    <div id="roleBox" class="small top-right"></div>
+    <div id="roleBox" class="small"></div>
   </div>
 
   <div id="view-home" class="card">
     <h3>Giới thiệu</h3>
-    <p class="small">Ứng dụng prototype đánh giá năng lực Sinh học 11 (dựa trên tài liệu bạn cung cấp). Chọn "Teacher" để quản lý ngân hàng câu hỏi / sinh đề; "Student" để làm bài.</p>
+    <p class="small">Ứng dụng prototype đánh giá năng lực Sinh học 11. Chọn "Teacher" để quản lý ngân hàng câu hỏi / sinh đề; "Student" để làm bài.</p>
     <div style="margin-top:10px"><button id="seed" class="small">Tải dữ liệu mẫu (50 câu)</button></div>
   </div>
 
@@ -186,7 +180,7 @@ h2,h3,h4{color:#e9fbff}
 </main>
 
 <footer class="footer">
-  ✨ <strong>Design by Fubao</strong> ✨ — Dữ liệu câu hỏi lấy từ Bài 12, Bài 13, Bài 14.
+  ✨ <strong>Design by Fubao</strong> ✨
 </footer>
 
 <!-- Login Modal -->
@@ -200,93 +194,88 @@ h2,h3,h4{color:#e9fbff}
       <button id="loginCancel" class="ghost small">Hủy</button>
       <button id="loginOk" class="small">Đăng nhập</button>
     </div>
-    <div style="margin-top:10px" class="small">Mật khẩu mặc định: <strong>teacher123</strong> (Bạn có thể thay đổi trong code)</div>
+    <div style="margin-top:10px" class="small">Mật khẩu mặc định: <strong>teacher123</strong></div>
   </div>
 </div>
 
 <script>
-/* ===== Keys / State ===== */
-const KEY = 'ssbio_v2';
-const ROLE_KEY = 'ssbio_role';
+/* ===== Keys & State ===== */
+const KEY='ssbio_final_v1';
+const ROLE_KEY='ssbio_role';
 let state = { questions: [], quizzes: [], results: [] };
 
-/* ===== PRELOADED 50 câu (Miễn dịch, Bài tiết, Cảm ứng) ===== */
+/* ===== PRELOADED (50 câu: MCQ, TF, Essay) ===== */
 const PRELOADED = [
   // Miễn dịch (1..20)
-  {id:'q1', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Miễn dịch là gì?', options:['Khả năng chống lại tác nhân gây bệnh','Quá trình tạo tế bào mới','Quá trình quang hợp','Sự trao đổi khí'], answer:0, source:'Bài 12'},
-  {id:'q2', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Miễn dịch không đặc hiệu có đặc điểm nào?', options:['Bẩm sinh, không cần tiếp xúc kháng nguyên','Chỉ xảy ra khi có kháng nguyên','Được ghi nhớ lâu dài','Chỉ có ở người'], answer:0, source:'Bài 12'},
-  {id:'q3', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Miễn dịch đặc hiệu gồm những loại chính nào?', options:['Dịch thể và trung gian tế bào','Miễn dịch không đặc hiệu và miễn dịch bẩm sinh','Tế bào và mô','Kháng nguyên và kháng thể'], answer:0, source:'Bài 12'},
-  {id:'q4', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Vai trò chính của vaccine là?', options:['Tạo miễn dịch chủ động','Gây bệnh để tăng sức đề kháng','Tiêu diệt vi khuẩn ngay lập tức','Thay thế kháng sinh'], answer:0, source:'Bài 12'},
-  {id:'q5', topic:'Miễn dịch', type:'tf', level:'Nhận biết', question:'Dị ứng là phản ứng quá mức của cơ thể với một dị nguyên. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 12'},
-  {id:'q6', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Phản ứng phản vệ nghiêm trọng có thể dẫn đến?', options:['Sốc phản vệ và giảm huyết áp','Tăng sinh trưởng','Tăng miễn dịch vĩnh viễn','Tăng nhiệt độ da'], answer:0, source:'Bài 12'},
-  {id:'q7', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Kháng thể được sản xuất bởi tế bào nào?', options:['Lympho B','Lympho T','Đại thực bào','Tiểu cầu'], answer:0, source:'Bài 12'},
-  {id:'q8', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Miễn dịch thụ động khác miễn dịch chủ động ở điểm nào?', options:['Nhận kháng thể từ ngoài, tồn tại ngắn hạn','Tạo trí nhớ miễn dịch','Gây miễn dịch suốt đời','Không liên quan đến kháng thể'], answer:0, source:'Bài 12'},
-  {id:'q9', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Một số bệnh như sởi thường chỉ mắc một lần vì?', options:['Hình thành trí nhớ miễn dịch','Virus bị tiêu diệt hoàn toàn','Do thuốc kháng sinh','Do vệ sinh môi trường'], answer:0, source:'Bài 12'},
-  {id:'q10', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Hiện tượng tự miễn là gì?', options:['Cơ thể tấn công chính mô của mình','Miễn dịch chống lại vi khuẩn','Miễn dịch do vắc xin','Miễn dịch không đặc hiệu'], answer:0, source:'Bài 12'},
-  {id:'q11', topic:'Miễn dịch', type:'tf', level:'Nhận biết', question:'Globulin miễn dịch (RIG) được dùng để tạo miễn dịch chủ động sau phơi nhiễm dại. (Đúng/Sai)', options:['Đúng','Sai'], answer:1, source:'Bài 12'},
-  {id:'q12', topic:'Miễn dịch', type:'mcq', level:'Vận dụng', question:'Thử phản ứng kháng sinh nhằm mục đích?', options:['Phát hiện nguy cơ dị ứng để tránh sốc phản vệ','Tăng tác dụng kháng sinh','Tạo miễn dịch lâu dài','Làm thay đổi gen vi khuẩn'], answer:0, source:'Bài 12'},
-  {id:'q13', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Thành phần hàng rào bảo vệ bên ngoài cơ thể gồm?', options:['Da, niêm mạc, chất tiết','Lympho T và B','Ti thể','Màng tế bào'], answer:0, source:'Bài 12'},
-  {id:'q14', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Interferon trong phản ứng với virus có chức năng?', options:['Kích thích tế bào không bị nhiễm sản xuất protein ức chế nhân lên của virus','Tiêu diệt vi khuẩn','Tăng hấp thu glucose','Kết dính ti thể'], answer:0, source:'Bài 12'},
-  {id:'q15', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Sốc phản vệ gây hậu quả nào sau đây?', options:['Co thắt phế quản, giãn mạch, giảm huyết áp','Tăng huyết áp','Tăng thân nhiệt','Giảm tiết dịch'], answer:0, source:'Bài 12'},
-  {id:'q16', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Kháng nguyên là gì?', options:['Chất lạ kích thích đáp ứng miễn dịch','Kháng thể trong huyết thanh','Tế bào miễn dịch','Enzyme tiêu hóa'], answer:0, source:'Bài 12'},
-  {id:'q17', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Miễn dịch cộng đồng (herd immunity) đạt khi tiêm chủng khoảng bao nhiêu % dân số?', options:['70-80%','10-20%','30-40%','100%'], answer:0, source:'Bài 12'},
-  {id:'q18', topic:'Miễn dịch', type:'essay', level:'Vận dụng', question:'Trình bày cơ chế chính của miễn dịch dịch thể và ví dụ lâm sàng.', source:'Bài 12'},
-  {id:'q19', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Dạng miễn dịch nào tồn tại bẩm sinh?', options:['Miễn dịch không đặc hiệu','Miễn dịch dịch thể','Miễn dịch trung gian tế bào','Miễn dịch thu được'], answer:0, source:'Bài 12'},
-  {id:'q20', topic:'Miễn dịch', type:'tf', level:'Thông hiểu', question:'HIV tấn công tế bào T CD4+. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 12'},
+  {id:'q1', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Miễn dịch là gì?', options:['Khả năng chống lại tác nhân gây bệnh','Quá trình tạo tế bào mới','Quá trình quang hợp','Sự trao đổi khí'], answer:0},
+  {id:'q2', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Miễn dịch không đặc hiệu có đặc điểm nào?', options:['Bẩm sinh, không cần tiếp xúc kháng nguyên','Chỉ xảy ra khi có kháng nguyên','Được ghi nhớ lâu dài','Chỉ có ở người'], answer:0},
+  {id:'q3', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Miễn dịch đặc hiệu gồm những loại chính nào?', options:['Dịch thể và trung gian tế bào','Miễn dịch không đặc hiệu và miễn dịch bẩm sinh','Tế bào và mô','Kháng nguyên và kháng thể'], answer:0},
+  {id:'q4', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Vai trò chính của vaccine là?', options:['Tạo miễn dịch chủ động','Gây bệnh để tăng sức đề kháng','Tiêu diệt vi khuẩn ngay lập tức','Thay thế kháng sinh'], answer:0},
+  {id:'q5', topic:'Miễn dịch', type:'tf', level:'Nhận biết', question:'Dị ứng là phản ứng quá mức của cơ thể với một dị nguyên. (Đúng/Sai)', options:['Đúng','Sai'], answer:0},
+  {id:'q6', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Phản ứng phản vệ nghiêm trọng có thể dẫn đến?', options:['Sốc phản vệ và giảm huyết áp','Tăng sinh trưởng','Tăng miễn dịch vĩnh viễn','Tăng nhiệt độ da'], answer:0},
+  {id:'q7', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Kháng thể được sản xuất bởi tế bào nào?', options:['Lympho B','Lympho T','Đại thực bào','Tiểu cầu'], answer:0},
+  {id:'q8', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Miễn dịch thụ động khác miễn dịch chủ động ở điểm nào?', options:['Nhận kháng thể từ ngoài, tồn tại ngắn hạn','Tạo trí nhớ miễn dịch','Gây miễn dịch suốt đời','Không liên quan đến kháng thể'], answer:0},
+  {id:'q9', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Một số bệnh như sởi thường chỉ mắc một lần vì?', options:['Hình thành trí nhớ miễn dịch','Virus bị tiêu diệt hoàn toàn','Do thuốc kháng sinh','Do vệ sinh môi trường'], answer:0},
+  {id:'q10', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Hiện tượng tự miễn là gì?', options:['Cơ thể tấn công chính mô của mình','Miễn dịch chống lại vi khuẩn','Miễn dịch do vắc xin','Miễn dịch không đặc hiệu'], answer:0},
+  {id:'q11', topic:'Miễn dịch', type:'tf', level:'Nhận biết', question:'Globulin miễn dịch (RIG) được dùng để tạo miễn dịch chủ động sau phơi nhiễm dại. (Đúng/Sai)', options:['Đúng','Sai'], answer:1},
+  {id:'q12', topic:'Miễn dịch', type:'mcq', level:'Vận dụng', question:'Thử phản ứng kháng sinh nhằm mục đích?', options:['Phát hiện nguy cơ dị ứng để tránh sốc phản vệ','Tăng tác dụng kháng sinh','Tạo miễn dịch lâu dài','Làm thay đổi gen vi khuẩn'], answer:0},
+  {id:'q13', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Thành phần hàng rào bảo vệ bên ngoài cơ thể gồm?', options:['Da, niêm mạc, chất tiết','Lympho T và B','Ti thể','Màng tế bào'], answer:0},
+  {id:'q14', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Interferon trong phản ứng với virus có chức năng?', options:['Kích thích tế bào không bị nhiễm sản xuất protein ức chế nhân lên của virus','Tiêu diệt vi khuẩn','Tăng hấp thu glucose','Kết dính ti thể'], answer:0},
+  {id:'q15', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Sốc phản vệ gây hậu quả nào sau đây?', options:['Co thắt phế quản, giãn mạch, giảm huyết áp','Tăng huyết áp','Tăng thân nhiệt','Giảm tiết dịch'], answer:0},
+  {id:'q16', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Kháng nguyên là gì?', options:['Chất lạ kích thích đáp ứng miễn dịch','Kháng thể trong huyết thanh','Tế bào miễn dịch','Enzyme tiêu hóa'], answer:0},
+  {id:'q17', topic:'Miễn dịch', type:'mcq', level:'Thông hiểu', question:'Miễn dịch cộng đồng (herd immunity) đạt khi tiêm chủng khoảng bao nhiêu % dân số?', options:['70-80%','10-20%','30-40%','100%'], answer:0},
+  {id:'q18', topic:'Miễn dịch', type:'essay', level:'Vận dụng', question:'Trình bày cơ chế chính của miễn dịch dịch thể và ví dụ lâm sàng.'},
+  {id:'q19', topic:'Miễn dịch', type:'mcq', level:'Nhận biết', question:'Dạng miễn dịch nào tồn tại bẩm sinh?', options:['Miễn dịch không đặc hiệu','Miễn dịch dịch thể','Miễn dịch trung gian tế bào','Miễn dịch thu được'], answer:0},
+  {id:'q20', topic:'Miễn dịch', type:'tf', level:'Thông hiểu', question:'HIV tấn công tế bào T CD4+. (Đúng/Sai)', options:['Đúng','Sai'], answer:0},
 
   // Bài tiết & cân bằng nội môi (21..35)
-  {id:'q21', topic:'Bài tiết', type:'mcq', level:'Nhận biết', question:'Quá trình hình thành nước tiểu gồm những giai đoạn nào?', options:['Lọc máu → tái hấp thu → bài tiết → dẫn nước tiểu','Tiêu hóa → hấp thu → bài tiết','Quang hợp → hô hấp → bài tiết','Lọc máu → bài tiết → hấp thu'], answer:0, source:'Bài 13'},
-  {id:'q22', topic:'Bài tiết', type:'mcq', level:'Nhận biết', question:'Nephron là đơn vị chức năng của cơ quan nào?', options:['Thận','Gan','Phổi','Tuyến tụy'], answer:0, source:'Bài 13'},
-  {id:'q23', topic:'Bài tiết', type:'mcq', level:'Thông hiểu', question:'Thận có vai trò chính nào?', options:['Lọc máu và tạo nước tiểu','Tiết enzyme tiêu hóa','Tạo hormone tăng trưởng','Thực hiện quang hợp'], answer:0, source:'Bài 13'},
-  {id:'q24', topic:'Bài tiết', type:'mcq', level:'Nhận biết', question:'Sản phẩm chính bài tiết của hệ hô hấp là gì?', options:['CO2','Ure','Nước tiểu','Glucose'], answer:0, source:'Bài 13'},
-  {id:'q25', topic:'Bài tiết', type:'tf', level:'Thông hiểu', question:'Uống rượu ức chế tuyến yên giải phóng ADH khiến thải nhiều nước tiểu. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 13'},
-  {id:'q26', topic:'Bài tiết', type:'mcq', level:'Thông hiểu', question:'Vai trò chính của cân bằng nội môi là?', options:['Duy trì ổn định môi trường trong cơ thể','Tăng tốc độ tiêu hóa','Làm thay đổi huyết áp liên tục','Giảm chức năng gan'], answer:0, source:'Bài 13'},
-  {id:'q27', topic:'Bài tiết', type:'mcq', level:'Nhận biết', question:'Khi thiếu nước trong cơ thể, áp suất thẩm thấu máu sẽ?', options:['Tăng','Giảm','Không đổi','Về 0'], answer:0, source:'Bài 13'},
-  {id:'q28', topic:'Bài tiết', type:'mcq', level:'Thông hiểu', question:'Cơ quan nào điều hòa nồng độ glucose máu chính?', options:['Tuyến tụy','Thận','Phổi','Tuyến giáp'], answer:0, source:'Bài 13'},
-  {id:'q29', topic:'Bài tiết', type:'mcq', level:'Vận dụng', question:'Quá trình bài tiết nước tiểu: thứ tự nào đúng?', options:['Lọc máu → tái hấp thu → bài tiết → ống dẫn','Tái hấp thu → lọc → bài tiết → ống dẫn','Tiết → lọc → tái hấp thu → ống dẫn','Ống dẫn → lọc → tái hấp thu → bài tiết'], answer:0, source:'Bài 13'},
-  {id:'q30', topic:'Bài tiết', type:'mcq', level:'Nhận biết', question:'Một trong những bệnh của thận là?', options:['Suy thận','Suyễn','Ung thư phổi','Viêm gan'], answer:0, source:'Bài 13'},
-  {id:'q31', topic:'Bài tiết', type:'tf', level:'Nhận biết', question:'Nephron gồm quản cầu thận và ống thận. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 13'},
-  {id:'q32', topic:'Bài tiết', type:'mcq', level:'Thông hiểu', question:'Tại gan có thể chuyển hóa giữa glucose và?', options:['Glycogen','Cholesterol','Protein','Axit béo'], answer:0, source:'Bài 13'},
-  {id:'q33', topic:'Bài tiết', type:'mcq', level:'Vận dụng', question:'Nếu kết quả xét nghiệm glucose máu = 7.5 mmol/L, điều này gợi ý?', options:['Có thể bị tiểu đường','Bình thường','Hạ đường huyết','Không liên quan'], answer:0, source:'Bài 13'},
-  {id:'q34', topic:'Bài tiết', type:'essay', level:'Vận dụng', question:'Giải thích vai trò của thận trong duy trì áp suất thẩm thấu và điều hòa nước.', source:'Bài 13'},
-  {id:'q35', topic:'Bài tiết', type:'mcq', level:'Thông hiểu', question:'Nếu uống quá ít nước lâu dài có thể gây?', options:['Sỏi thận','Nhiễm trùng tai','Tăng cân','Mất trí nhớ'], answer:0, source:'Bài 13'},
+  {id:'q21', topic:'Bài tiết', type:'mcq', level:'Nhận biết', question:'Quá trình hình thành nước tiểu gồm những giai đoạn nào?', options:['Lọc máu → tái hấp thu → bài tiết → dẫn nước tiểu','Tiêu hóa → hấp thu → bài tiết','Quang hợp → hô hấp → bài tiết','Lọc máu → bài tiết → hấp thu'], answer:0},
+  {id:'q22', topic:'Bài tiết', type:'mcq', level:'Nhận biết', question:'Nephron là đơn vị chức năng của cơ quan nào?', options:['Thận','Gan','Phổi','Tuyến tụy'], answer:0},
+  {id:'q23', topic:'Bài tiết', type:'mcq', level:'Thông hiểu', question:'Thận có vai trò chính nào?', options:['Lọc máu và tạo nước tiểu','Tiết enzyme tiêu hóa','Tạo hormone tăng trưởng','Thực hiện quang hợp'], answer:0},
+  {id:'q24', topic:'Bài tiết', type:'mcq', level:'Nhận biết', question:'Sản phẩm chính bài tiết của hệ hô hấp là gì?', options:['CO2','Ure','Nước tiểu','Glucose'], answer:0},
+  {id:'q25', topic:'Bài tiết', type:'tf', level:'Thông hiểu', question:'Uống rượu ức chế tuyến yên giải phóng ADH khiến thải nhiều nước tiểu. (Đúng/Sai)', options:['Đúng','Sai'], answer:0},
+  {id:'q26', topic:'Bài tiết', type:'mcq', level:'Thông hiểu', question:'Vai trò chính của cân bằng nội môi là?', options:['Duy trì ổn định môi trường trong cơ thể','Tăng tốc độ tiêu hóa','Làm thay đổi huyết áp liên tục','Giảm chức năng gan'], answer:0},
+  {id:'q27', topic:'Bài tiết', type:'mcq', level:'Nhận biết', question:'Khi thiếu nước trong cơ thể, áp suất thẩm thấu máu sẽ?', options:['Tăng','Giảm','Không đổi','Về 0'], answer:0},
+  {id:'q28', topic:'Bài tiết', type:'mcq', level:'Thông hiểu', question:'Cơ quan nào điều hòa nồng độ glucose máu chính?', options:['Tuyến tụy','Thận','Phổi','Tuyến giáp'], answer:0},
+  {id:'q29', topic:'Bài tiết', type:'mcq', level:'Vận dụng', question:'Quá trình bài tiết nước tiểu: thứ tự nào đúng?', options:['Lọc máu → tái hấp thu → bài tiết → ống dẫn','Tái hấp thu → lọc → bài tiết → ống dẫn','Tiết → lọc → tái hấp thu → ống dẫn','Ống dẫn → lọc → tái hấp thu → bài tiết'], answer:0},
+  {id:'q30', topic:'Bài tiết', type:'mcq', level:'Nhận biết', question:'Một trong những bệnh của thận là?', options:['Suy thận','Suyễn','Ung thư phổi','Viêm gan'], answer:0},
+  {id:'q31', topic:'Bài tiết', type:'tf', level:'Nhận biết', question:'Nephron gồm quản cầu thận và ống thận. (Đúng/Sai)', options:['Đúng','Sai'], answer:0},
+  {id:'q32', topic:'Bài tiết', type:'mcq', level:'Thông hiểu', question:'Tại gan có thể chuyển hóa giữa glucose và?', options:['Glycogen','Cholesterol','Protein','Axit béo'], answer:0},
+  {id:'q33', topic:'Bài tiết', type:'mcq', level:'Vận dụng', question:'Nếu kết quả xét nghiệm glucose máu = 7.5 mmol/L, điều này gợi ý?', options:['Có thể bị tiểu đường','Bình thường','Hạ đường huyết','Không liên quan'], answer:0},
+  {id:'q34', topic:'Bài tiết', type:'essay', level:'Vận dụng', question:'Giải thích vai trò của thận trong duy trì áp suất thẩm thấu và điều hòa nước.'},
+  {id:'q35', topic:'Bài tiết', type:'mcq', level:'Thông hiểu', question:'Nếu uống quá ít nước lâu dài có thể gây?', options:['Sỏi thận','Nhiễm trùng tai','Tăng cân','Mất trí nhớ'], answer:0},
 
   // Cảm ứng (36..50)
-  {id:'q36', topic:'Cảm ứng', type:'mcq', level:'Nhận biết', question:'Cảm ứng là gì?', options:['Thu nhận và trả lời kích thích của môi trường','Sự sinh sản của sinh vật','Sự tiêu hóa thức ăn','Sự phát triển tế bào'], answer:0, source:'Bài 14'},
-  {id:'q37', topic:'Cảm ứng', type:'mcq', level:'Nhận biết', question:'Các giai đoạn cơ bản của cơ chế cảm ứng là?', options:['Thu nhận → dẫn truyền → xử lí → trả lời','Chỉ thu nhận và trả lời','Dẫn truyền → xử lí → thu nhận','Phân chia → tổng hợp → tái hấp thu'], answer:0, source:'Bài 14'},
-  {id:'q38', topic:'Cảm ứng', type:'tf', level:'Nhận biết', question:'Ở người, khi trời nóng cơ thể toát mồ hôi là một ví dụ của cảm ứng. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 14'},
-  {id:'q39', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu', question:'Bộ phận thực hiện trả lời kích thích ở động vật thường là?', options:['Cơ, tuyến','Rễ, thân','Lá, hoa','Màng tế bào'], answer:0, source:'Bài 14'},
-  {id:'q40', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu', question:'Ví dụ về cảm ứng ở thực vật là?', options:['Ngọn cây hướng về ánh sáng','Ăn mồi','Chạy trốn','Tiết nước bọt'], answer:0, source:'Bài 14'},
-  {id:'q41', topic:'Cảm ứng', type:'mcq', level:'Nhận biết', question:'Phản xạ co tay khi chạm vật nóng là bộ phận nào xử lý thông tin?', options:['Tủy sống','Tim','Phổi','Gan'], answer:0, source:'Bài 14'},
-  {id:'q42', topic:'Cảm ứng', type:'mcq', level:'Vận dụng', question:'Sơ đồ thu nhận → dẫn truyền → xử lí → trả lời cho thấy vai trò gì?', options:['Tổ chức phản ứng có thứ tự và chính xác','Không quan trọng','Chỉ xảy ra ở thực vật','Là quá trình tiêu hóa'], answer:0, source:'Bài 14'},
-  {id:'q43', topic:'Cảm ứng', type:'tf', level:'Thông hiểu', question:'Cảm ứng ở động vật diễn ra nhanh hơn cảm ứng ở thực vật. (Đúng/Sai)', options:['Đúng','Sai'], answer:0, source:'Bài 14'},
-  {id:'q44', topic:'Cảm ứng', type:'mcq', level:'Nhận biết', question:'Thụ thể cảm nhận kích thích có thể là?', options:['Cơ quan thụ cảm (thụ quan)','Nephron','Lympho B','Màng tế bào'], answer:0, source:'Bài 14'},
-  {id:'q45', topic:'Cảm ứng', type:'essay', level:'Vận dụng', question:'Mô tả sơ lược cơ chế phản xạ và cho ví dụ minh họa trong đời sống.', source:'Bài 14'},
-  {id:'q46', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu', question:'Trong cơ chế cảm ứng, giai đoạn dẫn truyền có nhiệm vụ?', options:['Chuyển tín hiệu từ bộ phận thu nhận đến bộ phận xử lí','Tiết kháng thể','Tạo nước tiểu','Sản xuất glucose'], answer:0, source:'Bài 14'},
-  {id:'q47', topic:'Cảm ứng', type:'mcq', level:'Nhận biết', question:'Ví dụ "hoa mười giờ nở khi có ánh sáng" thuộc dạng nào?', options:['Cảm ứng ở thực vật','Hiện tượng ngẫu nhiên','Bệnh','Quá trình trao đổi chất'], answer:0, source:'Bài 14'},
-  {id:'q48', topic:'Cảm ứng', type:'tf', level:'Nhận biết', question:'Cảm ứng chỉ xảy ra với kích thích từ môi trường ngoài (ngoại thể). (Đúng/Sai)', options:['Đúng','Sai'], answer:1, source:'Bài 14'},
-  {id:'q49', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu', question:'Bộ phận xử lí thông tin ở động vật có hệ thần kinh là?', options:['Não và tủy sống','Gan','Thận','Da'], answer:0, source:'Bài 14'},
-  {id:'q50', topic:'Cảm ứng', type:'mcq', level:'Vận dụng', question:'Phản xạ giật tay khi chạm nóng giúp cơ thể?', options:['Tránh các điều kiện gây hại','Tăng nhiệt','Tạo kháng thể','Tăng hấp thu nước'], answer:0, source:'Bài 14'}
+  {id:'q36', topic:'Cảm ứng', type:'mcq', level:'Nhận biết', question:'Cảm ứng là gì?', options:['Thu nhận và trả lời kích thích của môi trường','Sự sinh sản của sinh vật','Sự tiêu hóa thức ăn','Sự phát triển tế bào'], answer:0},
+  {id:'q37', topic:'Cảm ứng', type:'mcq', level:'Nhận biết', question:'Các giai đoạn cơ bản của cơ chế cảm ứng là?', options:['Thu nhận → dẫn truyền → xử lí → trả lời','Chỉ thu nhận và trả lời','Dẫn truyền → xử lí → thu nhận','Phân chia → tổng hợp → tái hấp thu'], answer:0},
+  {id:'q38', topic:'Cảm ứng', type:'tf', level:'Nhận biết', question:'Ở người, khi trời nóng cơ thể toát mồ hôi là một ví dụ của cảm ứng. (Đúng/Sai)', options:['Đúng','Sai'], answer:0},
+  {id:'q39', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu', question:'Bộ phận thực hiện trả lời kích thích ở động vật thường là?', options:['Cơ, tuyến','Rễ, thân','Lá, hoa','Màng tế bào'], answer:0},
+  {id:'q40', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu', question:'Ví dụ về cảm ứng ở thực vật là?', options:['Ngọn cây hướng về ánh sáng','Ăn mồi','Chạy trốn','Tiết nước bọt'], answer:0},
+  {id:'q41', topic:'Cảm ứng', type:'mcq', level:'Nhận biết', question:'Phản xạ co tay khi chạm vật nóng là bộ phận nào xử lý thông tin?', options:['Tủy sống','Tim','Phổi','Gan'], answer:0},
+  {id:'q42', topic:'Cảm ứng', type:'mcq', level:'Vận dụng', question:'Sơ đồ thu nhận → dẫn truyền → xử lí → trả lời cho thấy vai trò gì?', options:['Tổ chức phản ứng có thứ tự và chính xác','Không quan trọng','Chỉ xảy ra ở thực vật','Là quá trình tiêu hóa'], answer:0},
+  {id:'q43', topic:'Cảm ứng', type:'tf', level:'Thông hiểu', question:'Cảm ứng ở động vật diễn ra nhanh hơn cảm ứng ở thực vật. (Đúng/Sai)', options:['Đúng','Sai'], answer:0},
+  {id:'q44', topic:'Cảm ứng', type:'mcq', level:'Nhận biết', question:'Thụ thể cảm nhận kích thích có thể là?', options:['Cơ quan thụ cảm (thụ quan)','Nephron','Lympho B','Màng tế bào'], answer:0},
+  {id:'q45', topic:'Cảm ứng', type:'essay', level:'Vận dụng', question:'Mô tả sơ lược cơ chế phản xạ và cho ví dụ minh họa trong đời sống.'},
+  {id:'q46', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu', question:'Trong cơ chế cảm ứng, giai đoạn dẫn truyền có nhiệm vụ?', options:['Chuyển tín hiệu từ bộ phận thu nhận đến bộ phận xử lí','Tiết kháng thể','Tạo nước tiểu','Sản xuất glucose'], answer:0},
+  {id:'q47', topic:'Cảm ứng', type:'mcq', level:'Nhận biết', question:'Ví dụ "hoa mười giờ nở khi có ánh sáng" thuộc dạng nào?', options:['Cảm ứng ở thực vật','Hiện tượng ngẫu nhiên','Bệnh','Quá trình trao đổi chất'], answer:0},
+  {id:'q48', topic:'Cảm ứng', type:'tf', level:'Nhận biết', question:'Cảm ứng chỉ xảy ra với kích thích từ môi trường ngoài (ngoại thể). (Đúng/Sai)', options:['Đúng','Sai'], answer:1},
+  {id:'q49', topic:'Cảm ứng', type:'mcq', level:'Thông hiểu', question:'Bộ phận xử lí thông tin ở động vật có hệ thần kinh là?', options:['Não và tủy sống','Gan','Thận','Da'], answer:0},
+  {id:'q50', topic:'Cảm ứng', type:'mcq', level:'Vận dụng', question:'Phản xạ giật tay khi chạm nóng giúp cơ thể?', options:['Tránh các điều kiện gây hại','Tăng nhiệt','Tạo kháng thể','Tăng hấp thu nước'], answer:0}
 ];
 
-/* ===== Helpers ===== */
+/* ===== helpers ===== */
 function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
 function load(){ const raw = localStorage.getItem(KEY); if(raw) state = JSON.parse(raw); else state = {questions: PRELOADED.slice(), quizzes: [], results: []}; }
 function ui(id){ return document.getElementById(id); }
 function uid(){ return 'id'+Math.random().toString(36).slice(2,9); }
 function toast(msg, t=2500){ const m = ui('modal'); m.innerText = msg; m.style.display='block'; setTimeout(()=>m.style.display='none', t); }
 
-/* ===== Init ===== */
+/* ===== init ===== */
 load(); renderRoleUI(); renderAll();
 
-/* ===== Role UI ===== */
-function setTeacherRole(flag){
-  if(flag) localStorage.setItem(ROLE_KEY, 'teacher');
-  else localStorage.removeItem(ROLE_KEY);
-  renderRoleUI();
-}
+/* ===== role UI ===== */
 function renderRoleUI(){
-  const role = localStorage.getItem(ROLE_KEY) === 'teacher' ? 'Giáo viên' : 'Học sinh';
+  const role = localStorage.getItem(ROLE_KEY) === 'teacher' ? 'Giáo viên' : 'Khách/Học sinh';
   ui('roleBox').innerHTML = `Role: <strong>${role}</strong>`;
   const isTeacher = localStorage.getItem(ROLE_KEY) === 'teacher';
   ui('teacherArea').classList.toggle('hidden', !isTeacher);
@@ -297,83 +286,85 @@ function renderRoleUI(){
   ui('btnImport').classList.toggle('ghost', !isTeacher);
 }
 
-/* ===== Navigation & Login (forced for first access) ===== */
-ui('nav-home').onclick = ()=>{ showView('home'); }
-ui('nav-student').onclick = ()=>{ setTeacherRole(false); showView('student'); populateQuizSelect(); renderRecent(); renderAnalysis(); }
+/* ===== Navigation & Login (force login first time) ===== */
+ui('nav-home').onclick = ()=> showView('home');
+ui('nav-student').onclick = ()=> { localStorage.setItem(ROLE_KEY, 'student'); renderRoleUI(); showView('student'); populateQuizSelect(); renderRecent(); renderAnalysis(); };
 
 ui('nav-teacher').onclick = ()=>{
-  const saved = localStorage.getItem(ROLE_KEY);
-  if(saved === 'teacher'){
+  const savedRole = localStorage.getItem(ROLE_KEY);
+  if(!savedRole){
+    toast('🔐 Cần đăng nhập để truy cập khu vực giáo viên');
+    ui('loginModal').style.display = 'flex';
+    return;
+  }
+  if(savedRole === 'teacher'){
     showView('teacher'); renderQuestionList(); renderQuizList(); renderTeacherStats();
   } else {
-    ui('loginModal').style.display = 'flex';
+    alert('Chỉ giáo viên mới có quyền truy cập khu vực này.');
   }
 };
+
 ui('openLogin') && (ui('openLogin').onclick = ()=> ui('loginModal').style.display='flex');
 ui('loginCancel').onclick = ()=> ui('loginModal').style.display='none';
 ui('loginOk').onclick = ()=>{
   const pass = ui('loginPass').value;
-  const REAL_PASS = 'teacher123'; // change here if needed
+  const REAL_PASS = 'teacher123'; // change if needed
   if(pass === REAL_PASS){
-    setTeacherRole(true);
+    localStorage.setItem(ROLE_KEY, 'teacher');
     ui('loginModal').style.display = 'none';
     ui('loginPass').value = '';
+    renderRoleUI();
     showView('teacher'); renderQuestionList(); renderQuizList(); renderTeacherStats(); toast('Đăng nhập thành công');
   } else {
     alert('Mật khẩu không đúng');
   }
 };
-ui('btnLogout').onclick = ()=>{ if(confirm('Đăng xuất khỏi tài khoản Giáo viên?')){ setTeacherRole(false); showView('home'); toast('Đã đăng xuất'); } };
+ui('btnLogout').onclick = ()=>{ if(confirm('Đăng xuất khỏi tài khoản Giáo viên?')){ localStorage.removeItem(ROLE_KEY); renderRoleUI(); showView('home'); toast('Đã đăng xuất'); } };
 
-/* Seed / Reset */
+/* seed/reset */
 ui('seed').onclick = ()=>{ state.questions = PRELOADED.slice(); state.quizzes = []; state.results = []; save(); toast('Đã nạp dữ liệu mẫu (50 câu)'); renderAll(); }
 ui('btn-reset').onclick = ()=>{ if(!confirm('Xóa toàn bộ dữ liệu lưu trên trình duyệt?')) return; localStorage.removeItem(KEY); localStorage.removeItem(ROLE_KEY); load(); renderAll(); renderRoleUI(); toast('Đã reset'); }
 
-/* ===== Teacher: add question ===== */
-ui('q_type').onchange = ()=>{ ui('mcq_area').style.display = ui('q_type').value==='mcq' ? 'block' : 'none'; }
+/* ===== teacher add question ===== */
+ui('q_type').onchange = ()=> ui('mcq_area').style.display = ui('q_type').value==='mcq' ? 'block' : 'none';
 ui('add_q').onclick = ()=>{
-  if(localStorage.getItem(ROLE_KEY)!=='teacher') return alert('Chỉ giáo viên mới được thêm câu hỏi. Vui lòng đăng nhập.');
+  if(localStorage.getItem(ROLE_KEY) !== 'teacher') return alert('Chỉ giáo viên mới được thêm câu hỏi.');
   const topic = ui('q_topic').value.trim() || 'Chung';
-  const type = ui('q_type').value;
-  const text = ui('q_text').value.trim();
-  const level = ui('q_level').value;
+  const type = ui('q_type').value; const text = ui('q_text').value.trim(); const level = ui('q_level').value;
   if(!text) return alert('Nhập nội dung câu hỏi');
-  const q = { id: uid(), topic, type, level, question: text, source: 'Người dùng' };
+  const q = { id: uid(), topic, type, level, question: text };
   if(type==='mcq'){
     const opts = [ui('opt_a').value, ui('opt_b').value, ui('opt_c').value, ui('opt_d').value].map(s=>s.trim());
     if(!opts[0]||!opts[1]) return alert('MCQ cần ít nhất 2 đáp án (A,B)');
     q.options = opts; q.answer = Number(ui('opt_correct').value) || 0;
   } else if(type==='tf'){
     q.options = ['Đúng','Sai']; q.answer = 0;
-  } else { q.type='essay'; }
+  }
   state.questions.push(q); save(); renderQuestionList(); toast('Đã thêm câu hỏi');
   ui('q_topic').value=''; ui('q_text').value=''; ui('opt_a').value=''; ui('opt_b').value=''; ui('opt_c').value=''; ui('opt_d').value=''; ui('opt_correct').value=0;
 };
 
-/* ===== render question list ===== */
+/* ===== render question list (Teacher only) ===== */
 function renderQuestionList(){
   const wrap = ui('q_list'); if(!wrap) return;
-  if(localStorage.getItem(ROLE_KEY)!=='teacher'){ wrap.innerHTML = '<div class="small label-locked">Chỉ giáo viên mới thấy ngân hàng câu hỏi. Vui lòng đăng nhập.</div>'; return; }
+  if(localStorage.getItem(ROLE_KEY) !== 'teacher'){ wrap.innerHTML = '<div class="small">Chỉ giáo viên mới thấy ngân hàng câu hỏi.</div>'; return; }
   if(!state.questions.length){ wrap.innerHTML='(chưa có câu hỏi)'; return; }
   wrap.innerHTML = state.questions.map(q=>{
     const meta = `${q.topic} • ${q.level} • ${q.type.toUpperCase()}`;
     const ans = q.type==='mcq' ? (q.options && q.options[q.answer] ? `Đáp: ${q.options[q.answer]}` : '') : (q.type==='tf' ? `Đáp: ${q.options[q.answer]}` : 'Tự luận');
-    return `<div class="q"><strong>${escape(q.question)}</strong><div class="small">${escape(meta)} • ${escape(q.source||'—')}</div><div class="small" style="margin-top:6px">${escape(ans)}</div>
+    return `<div class="q"><strong>${escape(q.question)}</strong><div class="small">${escape(meta)}</div><div class="small" style="margin-top:6px">${escape(ans)}</div>
       <div style="margin-top:6px"><button class="ghost small" onclick="deleteQ('${q.id}')">Xóa</button></div></div>`;
   }).join('');
 }
 window.deleteQ = function(id){ if(localStorage.getItem(ROLE_KEY)!=='teacher') return alert('Chỉ giáo viên mới được xóa câu hỏi.'); if(!confirm('Xóa câu hỏi?')) return; state.questions = state.questions.filter(x=>x.id!==id); state.quizzes.forEach(z=>z.qids = z.qids.filter(i=>i!==id)); save(); renderQuestionList(); renderQuizList(); toast('Đã xóa'); };
 
-/* ===== generate & save quiz ===== */
+/* ===== generate quiz ===== */
 ui('gen_btn').onclick = ()=>{
-  const mcqN = Number(ui('gen_mcq').value)||0;
-  const essayN = Number(ui('gen_essay').value)||0;
+  const mcqN = Number(ui('gen_mcq').value)||0; const essayN = Number(ui('gen_essay').value)||0;
   const topic = ui('gen_topic').value.trim().toLowerCase();
-  let pool = state.questions.slice();
-  if(topic) pool = pool.filter(q=>q.topic.toLowerCase().includes(topic));
-  const mcqPool = pool.filter(q=>q.type==='mcq');
-  const essayPool = pool.filter(q=>q.type==='essay');
-  if(mcqPool.length < mcqN || essayPool.length < essayN) { return alert('Không đủ câu hỏi trong pool theo yêu cầu. Giảm số câu hoặc thêm câu hỏi.'); }
+  let pool = state.questions.slice(); if(topic) pool = pool.filter(q=>q.topic.toLowerCase().includes(topic));
+  const mcqPool = pool.filter(q=>q.type==='mcq'); const essayPool = pool.filter(q=>q.type==='essay');
+  if(mcqPool.length < mcqN || essayPool.length < essayN) return alert('Không đủ câu hỏi trong pool theo yêu cầu.');
   const pick = sample(mcqPool, mcqN).concat(sample(essayPool, essayN));
   ui('gen_preview').innerText = pick.map((q,i)=>`${i+1}. ${q.question} (${q.type})`).join('\n\n');
   ui('save_gen').disabled = false; ui('save_gen').dataset.temp = JSON.stringify(pick.map(q=>q.id));
@@ -389,13 +380,11 @@ ui('save_gen').onclick = ()=>{
 /* ===== render quizzes ===== */
 function renderQuizList(){
   const wrap = ui('quiz_list'); if(!wrap) return;
-  if(localStorage.getItem(ROLE_KEY)!=='teacher'){ wrap.innerHTML = '<div class="small label-locked">Chỉ giáo viên mới thấy danh sách đề đã lưu.</div>'; return; }
+  if(localStorage.getItem(ROLE_KEY)!=='teacher'){ wrap.innerHTML = '<div class="small">Chỉ giáo viên mới thấy danh sách đề.</div>'; return; }
   if(!state.quizzes.length){ wrap.innerHTML='(chưa có đề)'; return; }
-  wrap.innerHTML = state.quizzes.map(z=>{
-    return `<div style="margin-bottom:8px"><strong>${escape(z.title)}</strong> <div class="small">(${z.qids.length} câu)</div>
-      <div style="margin-top:6px"><button class="ghost small" onclick="preview('${z.id}')">Xem</button> <button class="ghost small" onclick="deleteQuiz('${z.id}')">Xóa</button></div></div>`;
-  }).join('');
+  wrap.innerHTML = state.quizzes.map(z=>`<div style="margin-bottom:8px"><strong>${escape(z.title)}</strong><div class="small">(${z.qids.length} câu)</div><div style="margin-top:6px"><button class="ghost small" onclick="preview('${z.id}')">Xem</button> <button class="ghost small" onclick="deleteQuiz('${z.id}')">Xóa</button></div></div>`).join('');
 }
+function renderQuizListInner(){ renderQuizList(); }
 window.preview = function(id){ const z = state.quizzes.find(x=>x.id===id); if(!z) return alert('Không có'); alert('Preview: '+z.qids.map((qid,i)=>`${i+1}. ${(state.questions.find(q=>q.id===qid)||{question:'[đã xóa]'}).question}`).join('\n\n')); }
 window.deleteQuiz = function(id){ if(localStorage.getItem(ROLE_KEY)!=='teacher') return alert('Chỉ giáo viên mới được xóa đề.'); if(!confirm('Xóa đề?')) return; state.quizzes = state.quizzes.filter(x=>x.id!==id); save(); renderQuizList(); populateQuizSelect(); toast('Đã xóa đề'); };
 
@@ -410,7 +399,7 @@ ui('start_quiz').onclick = ()=>{
   showTakeArea(); renderQuestion();
 };
 
-/* render question */
+/* render question for student */
 function renderQuestion(){
   const s = window.session; if(!s) return;
   ui('take_title').innerText = `${s.title} — ${s.student}`;
@@ -437,7 +426,7 @@ function renderQuestion(){
   show('take_area');
 }
 
-/* submit quiz */
+/* submit quiz (auto grade MCQ/TF) */
 ui('submit_quiz').onclick = ()=>{
   if(!confirm('Nộp bài?')) return;
   const s = window.session; if(!s) return;
@@ -463,7 +452,6 @@ ui('submit_quiz').onclick = ()=>{
   renderRecent(); renderAnalysis(); renderTeacherStats();
 };
 
-/* show result summary */
 function showResult(r){
   let html = `${r.student} • ${r.title}\nĐiểm MCQ: ${r.score}% (${r.correct}/${r.total})\n\nTheo chủ đề:\n`;
   Object.entries(r.byTopic).forEach(([t,st])=>{
@@ -484,62 +472,34 @@ function hide(id){ ui(id).classList.add('hidden'); }
 function escape(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function sample(arr,n){ const copy=arr.slice(), res=[]; for(let i=0;i<n;i++){ const j=Math.floor(Math.random()*copy.length); res.push(copy.splice(j,1)[0]); } return res; }
 
-/* teacher stats & student history */
+/* teacher stats & recent */
 function renderTeacherStats(){
-  const wrap = ui('teacher_stats');
-  if(!state.results.length){ wrap.innerHTML='(chưa có kết quả)'; return; }
+  const wrap = ui('teacher_stats'); if(!state.results.length){ wrap.innerHTML='(chưa có kết quả)'; return; }
   const avg = Math.round(state.results.reduce((s,r)=>s+r.score,0)/state.results.length);
   const byTopic = {};
-  state.results.forEach(r=> Object.entries(r.byTopic||{}).forEach(([t,st])=>{
-    if(!byTopic[t]) byTopic[t]={correct:0,total:0}; byTopic[t].correct+=st.correct; byTopic[t].total+=st.total;
-  }));
+  state.results.forEach(r=> Object.entries(r.byTopic||{}).forEach(([t,st])=>{ if(!byTopic[t]) byTopic[t]={correct:0,total:0}; byTopic[t].correct+=st.correct; byTopic[t].total+=st.total; }));
   let html = `Số lần làm: ${state.results.length} • Điểm trung bình (MCQ): ${avg}%\n`;
-  Object.entries(byTopic).forEach(([t,st])=>{
-    const pct = st.total ? Math.round(100*st.correct/st.total):0;
-    html += `\n${t}: ${pct}% (${st.correct}/${st.total})`;
-  });
+  Object.entries(byTopic).forEach(([t,st])=>{ const pct = st.total ? Math.round(100*st.correct/st.total):0; html += `\n${t}: ${pct}% (${st.correct}/${st.total})`; });
   wrap.innerText = html;
 }
+function renderRecent(){ const wrap = ui('recent'); if(!state.results.length){ wrap.innerHTML='(chưa có)'; return; } wrap.innerHTML = state.results.slice(-6).reverse().map(r=>`${r.student} • ${r.title} • ${r.score}% • ${new Date(r.timestamp).toLocaleString()}`).join('<br>'); }
+function suggestion(pct){ if(pct>=85) return 'Tốt — tiếp tục nâng cao'; if(pct>=65) return 'Khá — ôn thêm câu sai'; if(pct>=40) return 'Trung bình — ôn lại kiến thức cơ bản'; return 'Yếu — cần ôn lại toàn bộ chủ đề'; }
+function renderAnalysis(){ const wrap = ui('analysis'); const name = ui('stu_name').value.trim(); const r = name ? state.results.slice().reverse().find(x=>x.student===name) : state.results.slice().reverse()[0]; if(!r){ wrap.innerHTML = 'Chưa có dữ liệu phân tích cho học sinh này.'; return; } let html = `<div class="small">Phân tích: <strong>${escape(r.student)}</strong> • Điểm: <strong>${r.score}%</strong></div>`; Object.entries(r.byTopic).forEach(([t,st])=>{ const pct = st.total ? Math.round(100*st.correct/st.total) : 0; html += `<div style="margin-top:8px"><strong>${escape(t)}</strong> — ${pct}% <div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div><div class="small">Gợi ý: ${suggestion(pct)}</div></div>`; }); wrap.innerHTML = html; }
 
-function renderRecent(){
-  const wrap = ui('recent'); if(!state.results.length){ wrap.innerHTML='(chưa có)'; return; }
-  wrap.innerHTML = state.results.slice(-6).reverse().map(r=>`${r.student} • ${r.title} • ${r.score}% • ${new Date(r.timestamp).toLocaleString()}`).join('<br>');
-}
-
-function suggestion(pct){
-  if(pct>=85) return 'Tốt — tiếp tục nâng cao';
-  if(pct>=65) return 'Khá — ôn thêm câu sai';
-  if(pct>=40) return 'Trung bình — ôn lại kiến thức cơ bản';
-  return 'Yếu — cần ôn lại toàn bộ chủ đề';
-}
-
-function renderAnalysis(){
-  const wrap = ui('analysis');
-  const name = ui('stu_name').value.trim();
-  const r = name ? state.results.slice().reverse().find(x=>x.student===name) : state.results.slice().reverse()[0];
-  if(!r){ wrap.innerHTML = 'Chưa có dữ liệu phân tích cho học sinh này.'; return; }
-  let html = `<div class="small">Phân tích: <strong>${escape(r.student)}</strong> • Điểm: <strong>${r.score}%</strong></div>`;
-  Object.entries(r.byTopic).forEach(([t,st])=>{
-    const pct = st.total ? Math.round(100*st.correct/st.total) : 0;
-    html += `<div style="margin-top:8px"><strong>${escape(t)}</strong> — ${pct}% <div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div><div class="small">Gợi ý: ${suggestion(pct)}</div></div>`;
-  });
-  wrap.innerHTML = html;
-}
-
-/* quiz selection */
+/* quiz select */
 function populateQuizSelect(){
-  const sel = ui('select_quiz'); sel.innerHTML = '';
+  const sel = ui('select_quiz'); if(!sel) return; sel.innerHTML = '';
   if(!state.quizzes.length){ sel.innerHTML = '<option value="">(Chưa có đề - giáo viên tạo)</option>'; return; }
   sel.innerHTML = state.quizzes.map(z=>`<option value="${z.id}">${escape(z.title)}</option>`).join('');
 }
 
-/* Export / Import JSON (guarded) */
+/* Export / Import (guarded) */
 ui('btnExport').onclick = ()=>{
   if(localStorage.getItem(ROLE_KEY)!=='teacher') return alert('Chỉ giáo viên mới được export dữ liệu.');
   const data = JSON.stringify(state, null, 2);
   const blob = new Blob([data], {type:'application/json'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'ssbio_questions_export.json'; document.body.appendChild(a); a.click(); a.remove();
+  const a = document.createElement('a'); a.href = url; a.download = 'ssbio_export.json'; document.body.appendChild(a); a.click(); a.remove();
 };
 ui('btnImport').onclick = ()=> {
   if(localStorage.getItem(ROLE_KEY)!=='teacher') { return alert('Chỉ giáo viên mới được import dữ liệu.'); }
@@ -556,12 +516,12 @@ ui('fileInput').onchange = e=>{
   }; reader.readAsText(f);
 };
 
-/* utils */
-function renderQuizListInner(){ const wrap = ui('quiz_list'); if(!wrap) return; if(localStorage.getItem(ROLE_KEY)!=='teacher'){ wrap.innerHTML = '<div class="small label-locked">Chỉ giáo viên mới thấy danh sách đề đã lưu.</div>'; return; } if(!state.quizzes.length){ wrap.innerHTML='(chưa có đề)'; return; } wrap.innerHTML = state.quizzes.map(z=>{ return `<div style="margin-bottom:8px"><strong>${escape(z.title)}</strong> <div class="small">(${z.qids.length} câu)</div><div style="margin-top:6px"><button class="ghost small" onclick="preview('${z.id}')">Xem</button> <button class="ghost small" onclick="deleteQuiz('${z.id}')">Xóa</button></div></div>`; }).join(''); }
-function renderAll(){ renderQuestionList(); renderQuizListInner(); populateQuizSelect(); renderRecent(); renderAnalysis(); renderTeacherStats(); }
+/* utils & renderAll */
+function renderQuizListInner(){ renderQuizList(); }
+function renderAll(){ renderQuestionList(); renderQuizListInner(); populateQuizSelect(); renderRecent(); renderAnalysis(); renderTeacherStats(); renderRoleUI(); }
 function showTakeArea(){ show('take_area'); }
 
-/* initial view */
+/* initial */
 showView('home');
 </script>
 </body>
