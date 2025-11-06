@@ -1,443 +1,269 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SSchoolBio — Shared (Firebase-ready)</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<title>Mô phỏng tái bản DNA – Design by Fubao</title>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
 <style>
-:root{
-  --blue1:#001428; --blue2:#002B55;
-  --accent:#00A8FF; --accent2:#007BFF;
-  --text:#EAF8FF; --muted:#9fbcd6;
-}
-body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg,var(--blue1),var(--blue2));color:var(--text);min-height:100vh}
-.container{max-width:1100px;margin:24px auto;padding:18px;background:rgba(255,255,255,0.03);border-radius:12px}
-header{background:linear-gradient(90deg,#003459,#0077cc);padding:18px}
-button{cursor:pointer;border:0;padding:10px 14px;border-radius:8px;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff}
-button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.08)}
-.small{font-size:13px;color:var(--muted)}
-.card{padding:12px;border-radius:10px;background:rgba(0,0,0,0.2);margin-bottom:12px}
-.q-list .q{border-left:4px solid var(--accent);padding:10px;margin:8px 0;border-radius:6px;background:rgba(0,0,0,0.25)}
-.hidden{display:none}
-#modal{position:fixed;right:20px;bottom:20px;width:320px;background:#012033;padding:12px;border-radius:8px;border-left:4px solid var(--accent);display:none}
-#loginModal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center}
-#loginBox{background:linear-gradient(180deg,#071427,#0f2742);padding:20px;border-radius:10px;width:420px}
-.footer{padding:12px;text-align:center;color:var(--muted)}
+  body {
+    background: radial-gradient(circle at center, #001020, #000814);
+    font-family: "Segoe UI", sans-serif;
+    color: #fff;
+    text-align: center;
+  }
+  h2 {
+    color: #6cfaff;
+    margin-top: 10px;
+    text-shadow: 0 0 10px #6cfaff;
+  }
+  p {
+    color: #a0e6ff;
+    text-shadow: 0 0 5px #4edfff;
+  }
+  canvas {
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,255,255,0.3);
+    margin-top: 10px;
+  }
+  footer {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #6cfaff;
+    text-shadow: 0 0 5px #00ffe0;
+  }
 </style>
 </head>
 <body>
-<header>
-  <div class="container" style="display:flex;justify-content:space-between;align-items:center">
-    <div>
-      <h2 style="margin:0">SSchoolBio — Firebase-ready</h2>
-      <div class="small">Chia sẻ đề qua Firestore (public demo nếu bạn gắn config)</div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button id="btnExport" class="ghost small">Export JSON</button>
-      <button id="btnImport" class="small">Import JSON</button>
-      <input id="fileInput" type="file" accept=".json" style="display:none">
-    </div>
-  </div>
-</header>
+  <h2>🧬 Mô phỏng quá trình tái bản DNA</h2>
+  <p>(1️⃣ Gyrase + Helicase → 2️⃣ Polymerase ×2 → 3️⃣ Ligase → 4️⃣ Hoàn tất)</p>
 
-<main class="container">
-  <div style="display:flex;gap:8px;margin-bottom:12px">
-    <button id="nav-home" class="">Home</button>
-    <button id="nav-teacher" class="ghost">Teacher</button>
-    <button id="nav-student" class="ghost">Student</button>
-    <button id="btn-reset" class="ghost small">Reset</button>
-    <div style="flex:1"></div>
-    <div id="roleBox" class="small"></div>
-  </div>
+  <script>
+  let bases = [];
+  const numBases = 15;
+  const spacing = 55;
+  const baseRadius = 14;
+  let gyraseX=-80, helicaseX=-60, poly1X=-120, poly2X=-120, ligaseX=-150;
+  let stage=0;
+  const speed = 0.6;
+  const colors = { A:'#ff7676', T:'#6caeff', C:'#1dd3b0', G:'#ffd93d' };
+  let glowTimer = 0;
+  let bgMusic, clickSound;
 
-  <div id="view-home" class="card">
-    <h3>Giới thiệu</h3>
-    <p class="small">Ứng dụng demo có thể đồng bộ đề lên Firestore (nếu bạn dán firebaseConfig). Nếu không, app chạy offline bằng localStorage.</p>
-    <div style="margin-top:10px"><button id="seed" class="small">Tải dữ liệu mẫu (50 câu)</button></div>
-  </div>
+  function preload(){
+    // Nhạc nền ambient và âm click nhẹ (sử dụng URL hợp lệ)
+    bgMusic = new Audio("https://cdn.pixabay.com/download/audio/2021/09/28/audio_8b2fbe223a.mp3?filename=soft-ambient-background-12821.mp3");
+    bgMusic.loop = true;
+    bgMusic.volume = 0.35;
 
-  <div id="view-teacher" class="hidden">
-    <div id="teacherLocked" class="card">
-      <h4>Teacher area — cần đăng nhập</h4>
-      <div style="margin-top:10px"><button id="openLogin" class="small">Đăng nhập Giáo viên</button></div>
-    </div>
+    clickSound = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_b5ffcd3972.mp3?filename=button-click-124467.mp3");
+    clickSound.volume = 0.4;
+  }
 
-    <div id="teacherArea" class="hidden">
-      <div class="card">
-        <h4>Ngân hàng câu hỏi</h4>
-        <div id="q_list" class="q-list small">(chưa có)</div>
-      </div>
-      <div class="card">
-        <h4>Tạo & Lưu đề (lên cloud nếu có config)</h4>
-        <label>Số MCQ</label><input id="gen_mcq" type="number" value="8">
-        <label>Số Essay</label><input id="gen_essay" type="number" value="1">
-        <div style="margin-top:8px">
-          <button id="gen_btn">Sinh đề</button>
-          <button id="save_gen" class="ghost" disabled>Lưu đề</button>
-          <button id="save_cloud" class="ghost" disabled>Lưu lên Cloud</button>
-        </div>
-        <pre id="gen_preview" class="small"></pre>
-      </div>
-    </div>
-  </div>
+  function setup() {
+    createCanvas(1150, 560);
+    textFont("Segoe UI");
+    initDNA();
+    bgMusic.play().catch(()=>{});
+  }
 
-  <div id="view-student" class="hidden">
-    <div class="card">
-      <h4>Học sinh: Chọn đề</h4>
-      <label>Tên</label><input id="stu_name" type="text" placeholder="Tên học sinh...">
-      <label>Danh sách đề (tải từ cloud nếu config có)</label>
-      <select id="select_quiz"></select>
-      <div style="margin-top:8px"><button id="start_quiz">Bắt đầu</button></div>
-      <div id="no_remote_note" class="small" style="margin-top:8px;color:#ffdca6"></div>
-    </div>
-
-    <div id="take_area" class="card hidden">
-      <h4 id="take_title">Bài làm</h4>
-      <div id="question_box"></div>
-      <div style="margin-top:8px"><button id="submit_quiz">Nộp bài</button></div>
-    </div>
-  </div>
-</main>
-
-<footer class="footer">
-  ✨ <strong>Design by Fubao</strong> ✨
-</footer>
-
-<div id="modal"></div>
-
-<!-- Login Modal -->
-<div id="loginModal">
-  <div id="loginBox">
-    <h3>Đăng nhập Giáo viên</h3>
-    <input id="loginPass" type="password" placeholder="Mật khẩu (teacher123)">
-    <div style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px">
-      <button id="loginCancel" class="ghost">Hủy</button>
-      <button id="loginOk">Đăng nhập</button>
-    </div>
-  </div>
-</div>
-
-<!-- Firebase SDKs (loaded only if config present) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<script>
-/* ====== App state ====== */
-const KEY='ssbio_shared_v1';
-const ROLE_KEY='ssbio_role';
-let state = { questions: [], quizzes: [], results: [] };
-let firebaseEnabled = false;
-let db = null;
-
-/* ====== Sample 50 câu (same structure as earlier) ====== */
-const PRELOADED = [
-  /* Miễn dịch 1-20 */
-  {id:'q1',topic:'Miễn dịch',type:'mcq',level:'Nhận biết',question:'Miễn dịch là gì?',options:['Khả năng chống lại tác nhân gây bệnh','Quá trình tạo tế bào mới','Quá trình quang hợp','Sự trao đổi khí'],answer:0},
-  {id:'q2',topic:'Miễn dịch',type:'mcq',level:'Nhận biết',question:'Miễn dịch không đặc hiệu có đặc điểm nào?',options:['Bẩm sinh, không cần tiếp xúc kháng nguyên','Chỉ xảy ra khi có kháng nguyên','Được ghi nhớ lâu dài','Chỉ có ở người'],answer:0},
-  {id:'q3',topic:'Miễn dịch',type:'mcq',level:'Thông hiểu',question:'Miễn dịch đặc hiệu gồm những loại chính nào?',options:['Dịch thể và trung gian tế bào','Miễn dịch không đặc hiệu và miễn dịch bẩm sinh','Tế bào và mô','Kháng nguyên và kháng thể'],answer:0},
-  {id:'q4',topic:'Miễn dịch',type:'mcq',level:'Nhận biết',question:'Vai trò chính của vaccine là?',options:['Tạo miễn dịch chủ động','Gây bệnh để tăng sức đề kháng','Tiêu diệt vi khuẩn ngay lập tức','Thay thế kháng sinh'],answer:0},
-  {id:'q5',topic:'Miễn dịch',type:'tf',level:'Nhận biết',question:'Dị ứng là phản ứng quá mức của cơ thể với một dị nguyên. (Đúng/Sai)',options:['Đúng','Sai'],answer:0},
-  {id:'q6',topic:'Miễn dịch',type:'mcq',level:'Thông hiểu',question:'Phản ứng phản vệ nghiêm trọng có thể dẫn đến?',options:['Sốc phản vệ và giảm huyết áp','Tăng sinh trưởng','Tăng miễn dịch vĩnh viễn','Tăng nhiệt độ da'],answer:0},
-  {id:'q7',topic:'Miễn dịch',type:'mcq',level:'Nhận biết',question:'Kháng thể được sản xuất bởi tế bào nào?',options:['Lympho B','Lympho T','Đại thực bào','Tiểu cầu'],answer:0},
-  {id:'q8',topic:'Miễn dịch',type:'mcq',level:'Thông hiểu',question:'Miễn dịch thụ động khác miễn dịch chủ động ở điểm nào?',options:['Nhận kháng thể từ ngoài, tồn tại ngắn hạn','Tạo trí nhớ miễn dịch','Gây miễn dịch suốt đời','Không liên quan đến kháng thể'],answer:0},
-  {id:'q9',topic:'Miễn dịch',type:'mcq',level:'Nhận biết',question:'Một số bệnh như sởi thường chỉ mắc một lần vì?',options:['Hình thành trí nhớ miễn dịch','Virus bị tiêu diệt hoàn toàn','Do thuốc kháng sinh','Do vệ sinh môi trường'],answer:0},
-  {id:'q10',topic:'Miễn dịch',type:'mcq',level:'Thông hiểu',question:'Hiện tượng tự miễn là gì?',options:['Cơ thể tấn công chính mô của mình','Miễn dịch chống lại vi khuẩn','Miễn dịch do vắc xin','Miễn dịch không đặc hiệu'],answer:0},
-  {id:'q11',topic:'Miễn dịch',type:'tf',level:'Nhận biết',question:'Globulin miễn dịch (RIG) được dùng để tạo miễn dịch chủ động sau phơi nhiễm dại. (Đúng/Sai)',options:['Đúng','Sai'],answer:1},
-  {id:'q12',topic:'Miễn dịch',type:'mcq',level:'Vận dụng',question:'Thử phản ứng kháng sinh nhằm mục đích?',options:['Phát hiện nguy cơ dị ứng để tránh sốc phản vệ','Tăng tác dụng kháng sinh','Tạo miễn dịch lâu dài','Làm thay đổi gen vi khuẩn'],answer:0},
-  {id:'q13',topic:'Miễn dịch',type:'mcq',level:'Nhận biết',question:'Thành phần hàng rào bảo vệ bên ngoài cơ thể gồm?',options:['Da, niêm mạc, chất tiết','Lympho T và B','Ti thể','Màng tế bào'],answer:0},
-  {id:'q14',topic:'Miễn dịch',type:'mcq',level:'Thông hiểu',question:'Interferon trong phản ứng với virus có chức năng?',options:['Kích thích tế bào không bị nhiễm sản xuất protein ức chế nhân lên của virus','Tiêu diệt vi khuẩn','Tăng hấp thu glucose','Kết dính ti thể'],answer:0},
-  {id:'q15',topic:'Miễn dịch',type:'mcq',level:'Thông hiểu',question:'Sốc phản vệ gây hậu quả nào sau đây?',options:['Co thắt phế quản, giãn mạch, giảm huyết áp','Tăng huyết áp','Tăng thân nhiệt','Giảm tiết dịch'],answer:0},
-  {id:'q16',topic:'Miễn dịch',type:'mcq',level:'Nhận biết',question:'Kháng nguyên là gì?',options:['Chất lạ kích thích đáp ứng miễn dịch','Kháng thể trong huyết thanh','Tế bào miễn dịch','Enzyme tiêu hóa'],answer:0},
-  {id:'q17',topic:'Miễn dịch',type:'mcq',level:'Thông hiểu',question:'Miễn dịch cộng đồng (herd immunity) đạt khi tiêm chủng khoảng bao nhiêu % dân số?',options:['70-80%','10-20%','30-40%','100%'],answer:0},
-  {id:'q18',topic:'Miễn dịch',type:'essay',level:'Vận dụng',question:'Trình bày cơ chế chính của miễn dịch dịch thể và ví dụ lâm sàng.'},
-  {id:'q19',topic:'Miễn dịch',type:'mcq',level:'Nhận biết',question:'Dạng miễn dịch nào tồn tại bẩm sinh?',options:['Miễn dịch không đặc hiệu','Miễn dịch dịch thể','Miễn dịch trung gian tế bào','Miễn dịch thu được'],answer:0},
-  {id:'q20',topic:'Miễn dịch',type:'tf',level:'Thông hiểu',question:'HIV tấn công tế bào T CD4+. (Đúng/Sai)',options:['Đúng','Sai'],answer:0},
-
-  /* Bài tiết 21..35 */
-  {id:'q21',topic:'Bài tiết',type:'mcq',level:'Nhận biết',question:'Quá trình hình thành nước tiểu gồm?',options:['Lọc → tái hấp thu → bài tiết','Tiêu hóa → hấp thu → bài tiết','Quang hợp → hô hấp → bài tiết','Lọc → bài tiết → hấp thu'],answer:0},
-  {id:'q22',topic:'Bài tiết',type:'mcq',level:'Nhận biết',question:'Nephron là đơn vị chức năng của?',options:['Thận','Gan','Phổi','Tuyến tụy'],answer:0},
-  {id:'q23',topic:'Bài tiết',type:'mcq',level:'Thông hiểu',question:'Vai trò chính của thận?',options:['Lọc máu và tạo nước tiểu','Tiết enzyme tiêu hóa','Tạo hormone tăng trưởng','Thực hiện quang hợp'],answer:0},
-  {id:'q24',topic:'Bài tiết',type:'mcq',level:'Nhận biết',question:'Sản phẩm chính bài tiết của hệ hô hấp?',options:['CO2','Ure','Nước tiểu','Glucose'],answer:0},
-  {id:'q25',topic:'Bài tiết',type:'tf',level:'Thông hiểu',question:'Uống rượu làm giảm ADH và tăng tiểu tiện. (Đúng/Sai)',options:['Đúng','Sai'],answer:0},
-  {id:'q26',topic:'Bài tiết',type:'mcq',level:'Thông hiểu',question:'Cân bằng nội môi nhằm mục đích?',options:['Duy trì ổn định môi trường trong cơ thể','Tăng tốc độ tiêu hóa','Thay đổi huyết áp','Giảm chức năng gan'],answer:0},
-  {id:'q27',topic:'Bài tiết',type:'mcq',level:'Nhận biết',question:'Thiếu nước => áp suất thẩm thấu máu?',options:['Tăng','Giảm','Không đổi','Về 0'],answer:0},
-  {id:'q28',topic:'Bài tiết',type:'mcq',level:'Thông hiểu',question:'Cơ quan chính điều hòa glucose?',options:['Tuyến tụy','Thận','Phổi','Tuyến giáp'],answer:0},
-  {id:'q29',topic:'Bài tiết',type:'mcq',level:'Vận dụng',question:'Thứ tự hình thành nước tiểu?',options:['Lọc → tái hấp thu → bài tiết → dẫn'],answer:0},
-  {id:'q30',topic:'Bài tiết',type:'mcq',level:'Nhận biết',question:'Bệnh liên quan thận?',options:['Suy thận','Suyễn','Ung thư phổi','Viêm gan'],answer:0},
-  {id:'q31',topic:'Bài tiết',type:'tf',level:'Nhận biết',question:'Nephron gồm quản cầu và ống thận. (Đúng/Sai)',options:['Đúng','Sai'],answer:0},
-  {id:'q32',topic:'Bài tiết',type:'mcq',level:'Thông hiểu',question:'Gan chuyển hóa glucose thành?',options:['Glycogen','Cholesterol','Protein','Axit béo'],answer:0},
-  {id:'q33',topic:'Bài tiết',type:'mcq',level:'Vận dụng',question:'Glucose 7.5 mmol/L gợi ý?',options:['Có thể tiểu đường','Bình thường','Hạ đường huyết','Không liên quan'],answer:0},
-  {id:'q34',topic:'Bài tiết',type:'essay',level:'Vận dụng',question:'Vai trò thận trong điều hòa nước và áp suất thẩm thấu.'},
-  {id:'q35',topic:'Bài tiết',type:'mcq',level:'Thông hiểu',question:'Uống ít nước lâu dài gây?',options:['Sỏi thận','Nhiễm trùng tai','Tăng cân','Mất trí nhớ'],answer:0},
-
-  /* Cảm ứng 36..50 */
-  {id:'q36',topic:'Cảm ứng',type:'mcq',level:'Nhận biết',question:'Cảm ứng là gì?',options:['Thu nhận và trả lời kích thích','Sinh sản','Tiêu hóa','Phát triển'],answer:0},
-  {id:'q37',topic:'Cảm ứng',type:'mcq',level:'Nhận biết',question:'Giai đoạn cơ bản của cảm ứng?',options:['Thu nhận→dẫn truyền→xử lý→trả lời','Thu nhận→trả lời','Dẫn truyền→xử lý','Phân chia→tổng hợp'],answer:0},
-  {id:'q38',topic:'Cảm ứng',type:'tf',level:'Nhận biết',question:'Toát mồ hôi khi nóng là cảm ứng. (Đúng/Sai)',options:['Đúng','Sai'],answer:0},
-  {id:'q39',topic:'Cảm ứng',type:'mcq',level:'Thông hiểu',question:'Bộ phận trả lời kích thích ở động vật?',options:['Cơ, tuyến','Rễ, thân','Lá, hoa','Màng tế bào'],answer:0},
-  {id:'q40',topic:'Cảm ứng',type:'mcq',level:'Thông hiểu',question:'Ví dụ cảm ứng ở thực vật?',options:['Ngọn hướng sáng','Ăn mồi','Chạy trốn','Tiết nước bọt'],answer:0},
-  {id:'q41',topic:'Cảm ứng',type:'mcq',level:'Nhận biết',question:'Phản xạ co tay xử lý ở?',options:['Tủy sống','Tim','Phổi','Gan'],answer:0},
-  {id:'q42',topic:'Cảm ứng',type:'mcq',level:'Vận dụng',question:'Thu nhận→dẫn truyền→xử lí→trả lời giúp?',options:['Phản ứng có thứ tự','Không quan trọng','Chỉ ở thực vật','Là tiêu hóa'],answer:0},
-  {id:'q43',topic:'Cảm ứng',type:'tf',level:'Thông hiểu',question:'Cảm ứng động vật nhanh hơn thực vật. (Đúng/Sai)',options:['Đúng','Sai'],answer:0},
-  {id:'q44',topic:'Cảm ứng',type:'mcq',level:'Nhận biết',question:'Thụ thể có thể là?',options:['Thụ quan','Nephron','Lympho B','Màng tế bào'],answer:0},
-  {id:'q45',topic:'Cảm ứng',type:'essay',level:'Vận dụng',question:'Mô tả cơ chế phản xạ và ví dụ.'},
-  {id:'q46',topic:'Cảm ứng',type:'mcq',level:'Thông hiểu',question:'Dẫn truyền có nhiệm vụ?',options:['Chuyển tín hiệu đến bộ phận xử lí','Tiết kháng thể','Tạo nước tiểu','Sản xuất glucose'],answer:0},
-  {id:'q47',topic:'Cảm ứng',type:'mcq',level:'Nhận biết',question:'Hoa mười giờ nở vì?',options:['Ánh sáng','Ngẫu nhiên','Bệnh','Trao đổi chất'],answer:0},
-  {id:'q48',topic:'Cảm ứng',type:'tf',level:'Nhận biết',question:'Cảm ứng chỉ xảy ra với kích thích ngoài. (Đúng/Sai)',options:['Đúng','Sai'],answer:1},
-  {id:'q49',topic:'Cảm ứng',type:'mcq',level:'Thông hiểu',question:'Bộ phận xử lí thông tin ở động vật?',options:['Não và tủy sống','Gan','Thận','Da'],answer:0},
-  {id:'q50',topic:'Cảm ứng',type:'mcq',level:'Vận dụng',question:'Phản xạ giật tay giúp?',options:['Tránh tổn hại','Tăng nhiệt','Tạo kháng thể','Tăng hấp thu nước'],answer:0}
-];
-
-/* ===== helpers ===== */
-function ui(id){return document.getElementById(id);}
-function uid(){return 'id'+Math.random().toString(36).slice(2,9);}
-function toast(msg, t=2000){ const m=ui('modal'); m.innerText=msg; m.style.display='block'; setTimeout(()=>m.style.display='none',t); }
-function saveLocal(){ localStorage.setItem(KEY, JSON.stringify(state)); }
-function loadLocal(){ const raw = localStorage.getItem(KEY); state = raw ? JSON.parse(raw) : { questions: PRELOADED.slice(), quizzes: [], results: [] }; }
-
-/* ===== Firebase init (enable if config pasted below) =====
-   To use cloud sharing, paste your firebaseConfig object into the PLACEHOLDER below.
-   Example:
-   const firebaseConfig = {
-     apiKey: "...",
-     authDomain: "...",
-     projectId: "...",
-     storageBucket: "...",
-     messagingSenderId: "...",
-     appId: "..."
-   };
-   If you want us to attach to a public demo project we host, provide permission or ask and supply config here.
-*/
-(function tryInitFirebase(){
-  // ====== PASTE FIREBASE CONFIG HERE if you have one =====
-  const firebaseConfig = null; // <-- <--- REPLACE null with your firebaseConfig object to enable cloud
-  // e.g. const firebaseConfig = { apiKey: "...", projectId: "..." };
-
-  if(firebaseConfig && firebaseConfig.projectId){
-    try{
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-      firebaseEnabled = true;
-      console.info('Firebase enabled. projectId=', firebaseConfig.projectId);
-      // set minimal rules note: demo assumes public read/write on collection 'quizzes'
-    }catch(err){
-      console.warn('Firebase init error', err);
-      firebaseEnabled = false;
+  function initDNA() {
+    bases=[];
+    const seq=['A','T','G','C','C','A','T','G','A','C','T','T','A','G','C'];
+    for(let i=0;i<numBases;i++){
+      bases.push({
+        base:seq[i], comp:complement(seq[i]),
+        open:false, newTop:false, newBottom:false,
+        pairedTop:false, pairedBottom:false, joined:false
+      });
     }
-  } else {
-    console.info('Firebase not configured → running in local/offline mode.');
-    firebaseEnabled = false;
   }
-})();
 
-/* ===== load ===== */
-loadLocal();
-renderRoleUI();
-renderAll();
+  function complement(b){ return b==='A'?'T':b==='T'?'A':b==='C'?'G':'C'; }
 
-/* ===== role UI & navigation ===== */
-function renderRoleUI(){
-  const role = localStorage.getItem(ROLE_KEY) === 'teacher' ? 'Giáo viên' : 'Khách/Học sinh';
-  ui('roleBox').innerHTML = `Role: <strong>${role}</strong>`;
-  const isTeacher = localStorage.getItem(ROLE_KEY) === 'teacher';
-  ui('teacherArea').classList.toggle('hidden', !isTeacher);
-  ui('teacherLocked').classList.toggle('hidden', isTeacher);
-}
+  function draw(){
+    background(0,20,40);
+    glowTimer += 0.1;
+    translate(width/2-(numBases*spacing)/2, height/2);
+    updateStage();
 
-ui('nav-home').onclick = ()=> showView('home');
-ui('nav-student').onclick = ()=> { localStorage.setItem(ROLE_KEY,'student'); renderRoleUI(); showView('student'); loadQuizzesForStudent(); }
-ui('nav-teacher').onclick = ()=>{
-  const saved = localStorage.getItem(ROLE_KEY);
-  if(!saved){ toast('🔐 Cần đăng nhập để truy cập khu vực giáo viên'); ui('loginModal').style.display='flex'; return; }
-  if(saved==='teacher'){ showView('teacher'); renderQuestionList(); } else alert('Chỉ giáo viên được truy cập.');
-};
+    for(let i=0;i<numBases;i++){
+      const x=i*spacing;
+      const b=bases[i];
 
-ui('openLogin').onclick = ()=> ui('loginModal').style.display='flex';
-ui('loginCancel').onclick = ()=> ui('loginModal').style.display='none';
-ui('loginOk').onclick = ()=>{
-  const pass = ui('loginPass').value;
-  if(pass === 'teacher123'){ localStorage.setItem(ROLE_KEY,'teacher'); ui('loginModal').style.display='none'; ui('loginPass').value=''; renderRoleUI(); showView('teacher'); renderQuestionList(); toast('Đăng nhập thành công'); }
-  else alert('Sai mật khẩu');
-};
-ui('btn-reset').onclick = ()=>{ if(!confirm('Xóa toàn bộ dữ liệu local?')) return; localStorage.removeItem(KEY); localStorage.removeItem(ROLE_KEY); loadLocal(); renderAll(); renderRoleUI(); toast('Đã reset local'); }
+      // Mạch gốc
+      drawBase(x,-40,b.base,colors[b.base]);
+      drawBase(x, 40,b.comp,colors[b.comp]);
 
-/* seed / export / import */
-ui('seed').onclick = ()=>{ state.questions = PRELOADED.slice(); state.quizzes = []; state.results = []; saveLocal(); renderAll(); toast('Đã nạp 50 câu mẫu (local)'); }
-ui('btnExport').onclick = ()=>{ if(localStorage.getItem(ROLE_KEY)!=='teacher' && !firebaseEnabled) return alert('Chỉ giáo viên có thể export (local)'); const data = JSON.stringify(state,null,2); const blob = new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ssbio_export.json'; a.click(); }
-ui('btnImport').onclick = ()=> ui('fileInput').click();
-ui('fileInput').onchange = e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload = ev=>{ try{ const json=JSON.parse(ev.target.result); if(json.questions) { state = json; saveLocal(); renderAll(); toast('Import thành công'); } else alert('File không đúng định dạng'); }catch(err){ alert('Lỗi đọc file: '+err); } }; r.readAsText(f); }
+      if(!b.open) drawHydrogenCurved(x,-40,40,b.base,b.comp);
 
-/* ===== Teacher: render question list (local) ===== */
-function renderQuestionList(){
-  const wrap = ui('q_list'); if(!wrap) return;
-  if(localStorage.getItem(ROLE_KEY) !== 'teacher'){ wrap.innerHTML = '<div class="small">Chỉ giáo viên mới thấy ngân hàng câu hỏi.</div>'; return; }
-  if(!state.questions.length){ wrap.innerHTML='(chưa có câu hỏi)'; return; }
-  wrap.innerHTML = state.questions.map(q=>`<div class="q"><strong>${escape(q.question)}</strong><div class="small">${escape(q.topic)} • ${escape(q.level)} • ${escape(q.type)}</div></div>`).join('');
-}
-
-/* ===== Generate / Save quiz (local) ===== */
-ui('gen_btn').onclick = ()=>{
-  const mcqN = Number(ui('gen_mcq').value)||0; const essayN = Number(ui('gen_essay').value)||0;
-  const pool = state.questions.slice();
-  const mcqPool = pool.filter(q=>q.type==='mcq'); const essayPool = pool.filter(q=>q.type==='essay');
-  if(mcqPool.length < mcqN || essayPool.length < essayN) return alert('Không đủ câu trong pool');
-  const pick = sample(mcqPool, mcqN).concat(sample(essayPool, essayN));
-  ui('gen_preview').innerText = pick.map((q,i)=>`${i+1}. ${q.question} (${q.type})`).join('\n\n');
-  ui('save_gen').disabled = false; ui('save_gen').dataset.ids = JSON.stringify(pick.map(q=>q.id));
-};
-ui('save_gen').onclick = ()=>{
-  if(localStorage.getItem(ROLE_KEY)!=='teacher') return alert('Chỉ giáo viên mới lưu đề.');
-  const ids = JSON.parse(ui('save_gen').dataset.ids||'[]'); if(!ids.length) return alert('Không có đề');
-  const title = prompt('Tiêu đề đề thi:', 'Đề tự sinh '+new Date().toLocaleString());
-  const quiz = { id: uid(), title, qids: ids, created: Date.now() };
-  state.quizzes.push(quiz); saveLocal(); renderAll(); toast('Đã lưu đề (local)');
-  // enable cloud upload if firebase available
-  if(firebaseEnabled) ui('save_cloud').disabled = false;
-};
-
-/* ===== Save quiz to Firestore (if enabled) ===== */
-ui('save_cloud').onclick = async ()=>{
-  if(!firebaseEnabled) return alert('Firebase chưa cấu hình.');
-  if(localStorage.getItem(ROLE_KEY)!=='teacher') return alert('Chỉ giáo viên mới upload.');
-  const last = state.quizzes[state.quizzes.length-1];
-  if(!last) return alert('Không có đề để upload.');
-  try{
-    // upload as document to 'quizzes' collection
-    const docRef = await db.collection('quizzes').add({
-      title: last.title,
-      qids: last.qids,
-      created: last.created,
-      uploadedAt: Date.now()
-    });
-    toast('Đã upload đề lên cloud (id:'+docRef.id+')',3000);
-  }catch(err){
-    console.error(err); alert('Upload thất bại: '+err.message);
-  }
-};
-
-/* ===== Student: load quizzes from cloud (if enabled) or local ===== */
-async function loadQuizzesForStudent(){
-  const sel = ui('select_quiz'); sel.innerHTML = '';
-  ui('no_remote_note').innerText = '';
-  if(firebaseEnabled){
-    ui('no_remote_note').innerText = 'Đang tải danh sách đề từ cloud...';
-    try{
-      const snap = await db.collection('quizzes').orderBy('created','desc').get();
-      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      if(docs.length){
-        docs.forEach(d => {
-          const opt = document.createElement('option'); opt.value = d.id; opt.innerText = `${d.title} (${d.qids.length} câu)`; sel.appendChild(opt);
-        });
-        ui('no_remote_note').innerText = 'Đã tải đề từ cloud.';
-        // cache remote quizzes to local.state.quizzes (optionally)
-        // NOTE: remote qids reference local question ids — make sure questions exist locally or fetch full question set from remote as well (not implemented here)
-        state.quizzes_remote = docs;
-      } else {
-        ui('no_remote_note').innerText = 'Chưa có đề trên cloud.';
+      stroke(80);
+      if(i<numBases-1){
+        line(x+baseRadius+4,-40,x+spacing-(baseRadius+4),-40);
+        line(x+baseRadius+4, 40,x+spacing-(baseRadius+4), 40);
       }
-    }catch(err){
-      console.error(err); ui('no_remote_note').innerText = 'Lỗi tải từ cloud: '+err.message;
+
+      // Mạch mới trên
+      if(b.newTop){
+        let newColor = colors[complement(b.base)];
+        const glow = 80 + 60*sin(glowTimer);
+        drawBaseGlow(x,-85,complement(b.base),newColor,glow);
+        if(b.pairedTop) drawHydrogenCurved(x,-85,-40,b.base,complement(b.base));
+        if(i<numBases-1 && bases[i+1].newTop){
+          stroke(newColor);
+          line(x+baseRadius+4,-85,x+spacing-(baseRadius+4),-85);
+        }
+      }
+
+      // Mạch mới dưới
+      if(b.newBottom){
+        let newColor = colors[complement(b.comp)];
+        const glow = 80 + 60*sin(glowTimer);
+        drawBaseGlow(x,85,complement(b.comp),newColor,glow);
+        if(b.pairedBottom) drawHydrogenCurved(x,85,40,b.comp,complement(b.comp));
+        if(i<numBases-1 && bases[i+1].newBottom){
+          stroke(newColor);
+          line(x+baseRadius+4,85,x+spacing-(baseRadius+4),85);
+        }
+      }
+
+      // Ligase nối
+      if(b.joined && i<numBases-1){
+        stroke(255,200,80);
+        strokeWeight(2);
+        line(x+baseRadius+4,85,x+spacing-(baseRadius+4),85);
+        strokeWeight(1);
+      }
     }
-  } else {
-    // fallback: load local quizzes
-    if(!state.quizzes.length){ sel.innerHTML = '<option value="">(không có đề - giáo viên tạo)</option>'; } else {
-      state.quizzes.forEach(q=>{ const opt=document.createElement('option'); opt.value=q.id; opt.innerText = `${q.title} (${q.qids.length} câu)`; sel.appendChild(opt); });
+
+    drawEnzymes();
+
+    // Giai đoạn
+    resetMatrix();
+    textAlign(CENTER);
+    textSize(18);
+    fill("#6cfaff");
+    let stageText = "";
+    if(stage===0) stageText = "Giai đoạn 1️⃣: Gyrase và Helicase đang tháo xoắn, tách hai mạch DNA.";
+    else if(stage===1) stageText = "Giai đoạn 2️⃣: Hai Polymerase tổng hợp mạch bổ sung và hình thành liên kết hiđrô.";
+    else if(stage===2) stageText = "Giai đoạn 3️⃣: Ligase nối các đoạn Okazaki, hoàn thiện mạch chậm.";
+    else stageText = "Giai đoạn 4️⃣: Hoàn tất! Hai phân tử DNA mới được tạo ra (bán bảo toàn).";
+    text(stageText, width/2, 60);
+
+    // Chiều
+    fill("#fff");
+    textSize(14);
+    text("3′", width/2-(numBases*spacing)/2-25, height/2-60);
+    text("5′", width/2+(numBases*spacing)/2+25, height/2-60);
+    text("5′", width/2-(numBases*spacing)/2-25, height/2+90);
+    text("3′", width/2+(numBases*spacing)/2+25, height/2+90);
+  }
+
+  function drawBase(x,y,label,col){
+    stroke(col);
+    strokeWeight(2);
+    fill(col+"33");
+    ellipse(x,y,baseRadius*2,baseRadius*2);
+    noStroke();
+    fill(col);
+    textAlign(CENTER,CENTER);
+    textSize(12);
+    text(label,x,y);
+  }
+
+  function drawBaseGlow(x,y,label,col,glow){
+    noStroke();
+    fill(col + "22");
+    ellipse(x,y,baseRadius*2 + 10*sin(glowTimer),baseRadius*2 + 10*sin(glowTimer));
+    stroke(col);
+    strokeWeight(2);
+    fill(col + "33");
+    ellipse(x,y,baseRadius*2,baseRadius*2);
+    noStroke();
+    fill(col);
+    textAlign(CENTER,CENTER);
+    textSize(12);
+    text(label,x,y);
+  }
+
+  // Liên kết H không cắt nucleotide
+  function drawHydrogenCurved(x,y1,y2,b1,b2){
+    const nLines = (b1==='G'&&b2==='C')||(b1==='C'&&b2==='G') ? 3 : 2;
+    const offset = 3.5;
+    const totalWidth = (nLines - 1) * offset;
+    const startX = x - totalWidth / 2;
+    const pad = 4;
+    let yStart, yEnd;
+
+    if (y1 < y2) {
+      yStart = y1 + baseRadius + pad;
+      yEnd   = y2 - baseRadius - pad;
+    } else {
+      yStart = y1 - baseRadius - pad;
+      yEnd   = y2 + baseRadius + pad;
     }
-    ui('no_remote_note').innerText = 'Chạy ở chế độ offline (không có cloud config).';
-  }
-}
 
-/* ===== start quiz for student (local or cloud) ===== */
-ui('start_quiz').onclick = async ()=>{
-  const sel = ui('select_quiz'); const val = sel.value;
-  if(!val) return alert('Chọn đề trước.');
-  const name = ui('stu_name').value.trim() || 'HS ẩn danh';
-  // if cloud and firebase enabled, load quiz doc and map qids to local questions
-  if(firebaseEnabled){
-    try{
-      const doc = await db.collection('quizzes').doc(val).get();
-      if(!doc.exists) return alert('Đề cloud không tồn tại.');
-      const qdoc = doc.data();
-      // qdoc.qids are ids — we must map them to questions in local; if not found, we warn
-      const qlist = qdoc.qids.map(qid => state.questions.find(q=>q.id===qid)).filter(Boolean);
-      if(!qlist.length) return alert('Các câu hỏi đề này chưa có trong local. Giáo viên cần upload cả bộ câu hỏi lên cloud hoặc học sinh import bộ câu hỏi (local).');
-      window.session = { id: uid(), student: name, quizId: val, title: qdoc.title, questions: qlist, pos:0, answers:{} };
-      show('take_area'); renderQuestion();
-    }catch(err){ console.error(err); alert('Lỗi tải đề từ cloud: '+err.message); }
-  } else {
-    const quiz = state.quizzes.find(q=>q.id===val);
-    if(!quiz) return alert('Đề local không tồn tại.');
-    const qlist = quiz.qids.map(id => state.questions.find(q=>q.id===id)).filter(Boolean);
-    window.session = { id: uid(), student: name, quizId: quiz.id, title: quiz.title, questions: qlist, pos:0, answers:{} };
-    show('take_area'); renderQuestion();
-  }
-};
+    const midY = (yStart + yEnd) / 2;
+    const ctrlOffset = Math.abs(yEnd - yStart) / 3;
 
-/* ===== render question for student (local function reused) ===== */
-function renderQuestion(){
-  const s=window.session; if(!s) return;
-  ui('take_title').innerText = `${s.title} — ${s.student}`;
-  const q = s.questions[s.pos];
-  let html = `<div><strong>Câu ${s.pos+1}/${s.questions.length}</strong></div><div style="margin-top:8px"><div class="small"><strong>${escape(q.question)}</strong></div>`;
-  if(q.type==='mcq'){
-    (q.options||[]).forEach((opt,i)=> html += `<label style="display:block;margin-top:8px"><input type="radio" name="ans" value="${i}"> ${escape(opt)}</label>`);
-  } else if(q.type==='tf'){
-    html += `<label style="display:block;margin-top:8px"><input type="radio" name="ans" value="0"> Đúng</label>`;
-    html += `<label style="display:block;margin-top:8px"><input type="radio" name="ans" value="1"> Sai</label>`;
-  } else {
-    html += `<textarea id="essay_${q.id}" rows="6" style="width:100%;margin-top:8px"></textarea>`;
-  }
-  html += `</div>`;
-  ui('question_box').innerHTML = html;
-}
+    stroke(180,220,255);
+    strokeWeight(1.1);
+    noFill();
 
-/* ===== submit quiz (auto-grade MCQ/TF) ===== */
-ui('submit_quiz').onclick = ()=>{
-  if(!window.session) return;
-  const s = window.session;
-  // collect answers
-  const inputs = document.querySelectorAll('#question_box input[type=radio]');
-  inputs.forEach(i=>{ if(i.checked){ s.answers[s.questions[s.pos].id] = Number(i.value); } });
-  // simple grading
-  let correct=0, total=0, byTopic={};
-  s.questions.forEach(q=>{
-    if(q.type==='mcq' || q.type==='tf'){
-      total++;
-      const given = s.answers[q.id];
-      const isCorrect = (given !== undefined) && Number(given) === Number(q.answer);
-      if(isCorrect) correct++;
-      if(!byTopic[q.topic]) byTopic[q.topic] = {correct:0,total:0};
-      byTopic[q.topic].total++; if(isCorrect) byTopic[q.topic].correct++;
+    for (let i = 0; i < nLines; i++) {
+      const lx = startX + i * offset;
+      if (y1 < y2) {
+        bezier(lx, yStart, lx + 4, midY - ctrlOffset, lx - 4, midY + ctrlOffset, lx, yEnd);
+      } else {
+        bezier(lx, yStart, lx - 4, midY + ctrlOffset, lx + 4, midY - ctrlOffset, lx, yEnd);
+      }
     }
-  });
-  const pct = total ? Math.round(100*correct/total) : 0;
-  const res = { id: uid(), student: s.student, quizId: s.quizId, title: s.title, score: pct, correct, total, byTopic, timestamp: Date.now() };
-  state.results.push(res); saveLocal();
-  toast(`Đã nộp • Điểm MCQ: ${pct}%`);
-  alert(`${s.student} • ${s.title}\nĐiểm MCQ: ${pct}% (${correct}/${total})`);
-  window.session = null; hide('take_area'); renderAll();
-};
+  }
 
-/* ===== Utility functions ===== */
-function showView(v){ ['home','teacher','student'].forEach(x=> ui('view-'+x).classList.add('hidden')); ui('view-'+v).classList.remove('hidden'); }
-function escape(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
-function sample(arr,n){ const c=arr.slice(), r=[]; for(let i=0;i<n;i++){ const j=Math.floor(Math.random()*c.length); r.push(c.splice(j,1)[0]); } return r; }
+  function drawEnzymes(){
+    if(stage===0){
+      drawGlowCircle(gyraseX,-10,26,"#ff4747");
+      drawGlowCircle(helicaseX,10,26,"#b580ff");
+    } else if(stage===1){
+      drawGlowCircle(poly1X,-100,24,"#57a8ff");
+      drawGlowCircle(poly2X,100,24,"#57a8ff");
+    } else if(stage===2){
+      drawGlowCircle(ligaseX,85,26,"#ffc44d");
+    }
+  }
 
-/* ===== renderAll ===== */
-function renderAll(){
-  renderQuestionList();
-  populateQuizSelectLocal();
-  renderRoleUI();
-}
-function populateQuizSelectLocal(){
-  const sel=ui('select_quiz'); sel.innerHTML='';
-  if(state.quizzes.length) state.quizzes.forEach(q=>{ const opt=document.createElement('option'); opt.value=q.id; opt.innerText = `${q.title} (${q.qids.length} câu)`; sel.appendChild(opt); });
-  else sel.innerHTML = '<option value="">(Chưa có đề local)</option>';
-}
+  function drawGlowCircle(x,y,r,col){
+    noStroke();
+    fill(col+"33");
+    ellipse(x,y,r+10);
+    fill(col);
+    ellipse(x,y,r);
+    stroke(col);
+    strokeWeight(1.2);
+  }
 
-/* ===== initial view ===== */
-showView('home');
-</script>
+  function updateStage(){
+    if(stage===0){
+      gyraseX+=speed; helicaseX+=speed;
+      const idx=int(helicaseX/spacing);
+      if(idx>=0&&idx<numBases){ bases[idx].open=true; clickSound.play(); }
+      if(helicaseX>numBases*spacing){ stage=1; poly1X=0; poly2X=0; }
+    }
+    else if(stage===1){
+      poly1X+=speed; poly2X+=speed;
+      const i1=int(poly1X/spacing), i2=int(poly2X/spacing);
+      if(i1>=0&&i1<numBases){ bases[i1].newTop=true; bases[i1].pairedTop=true; clickSound.play(); }
+      if(i2>=0&&i2<numBases){ bases[i2].newBottom=true; bases[i2].pairedBottom=true; clickSound.play(); }
+      if(poly1X>numBases*spacing){ stage=2; ligaseX=0; }
+    }
+    else if(stage===2){
+      ligaseX+=speed;
+      const j=int(ligaseX/spacing);
+      if(j>=0&&j<numBases){ bases[j].joined=true; clickSound.play(); }
+      if(ligaseX>numBases*spacing) stage=3;
+    }
+  }
+  </script>
+
+  <footer>✨ Design by Fubao ✨</footer>
 </body>
 </html>
