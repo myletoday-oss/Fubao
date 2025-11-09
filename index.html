@@ -2,268 +2,337 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Mô phỏng tái bản DNA – Design by Fubao</title>
-<script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chiếc Khăn Nhiệm Màu – Giải Cứu Trái Đất Xanh 🌍</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
   body {
-    background: radial-gradient(circle at center, #001020, #000814);
-    font-family: "Segoe UI", sans-serif;
-    color: #fff;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #A8E6CF, #DCEDC1);
+    overflow-x: hidden;
+  }
+
+  /* Start Screen */
+  #start-screen, #result-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+  }
+
+  h1 {
+    font-size: 2em;
+    color: #2b593f;
+    margin-bottom: 10px;
+  }
+
+  p.story {
+    font-size: 1.1em;
+    color: #444;
+    max-width: 600px;
+    margin-bottom: 20px;
+  }
+
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: #FFAAA5;
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    background-color: #FF8C7A;
+    transform: scale(1.05);
+  }
+
+  /* Game Layout */
+  #game-container {
+    display: none;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #instruction {
+    background: rgba(255,255,255,0.8);
+    padding: 10px 20px;
+    border-radius: 10px;
+    color: #2b593f;
+    margin-bottom: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+
+  #tablecloth {
+    display: grid;
+    grid-template-areas:
+      "air . water"
+      ". center ."
+      "soil . noise";
+    gap: 20px;
+    align-items: center;
+    justify-items: center;
+  }
+
+  .zone {
+    width: 200px;
+    height: 180px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    padding: 10px;
+    text-align: center;
+    transition: 0.3s;
+  }
+
+  .zone.completed {
+    background: #A8E6CF;
+    box-shadow: 0 0 20px #7ae7a1;
+  }
+
+  .zone textarea {
+    width: 90%;
+    height: 80px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    resize: none;
+    padding: 5px;
+  }
+
+  #center-zone {
+    grid-area: center;
+    background: #E0F7FA;
     text-align: center;
   }
-  h2 {
-    color: #6cfaff;
+
+  #combine-btn {
+    display: none;
     margin-top: 10px;
-    text-shadow: 0 0 10px #6cfaff;
+    padding: 10px 20px;
+    background: #77dd77;
   }
-  p {
-    color: #a0e6ff;
-    text-shadow: 0 0 5px #4edfff;
-  }
-  canvas {
+
+  /* CHỈ SỬA Ở ĐÂY: Không ẩn nút nộp bài trong giai đoạn 2 */
+  #submit-solution-btn {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
     border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,255,255,0.3);
-    margin-top: 10px;
   }
-  footer {
-    margin-top: 12px;
-    font-size: 14px;
-    color: #6cfaff;
-    text-shadow: 0 0 5px #00ffe0;
+
+  #earth-img {
+    width: 120px;
+    margin-bottom: 10px;
+    transition: filter 2s, transform 2s;
+    filter: grayscale(80%);
+  }
+
+  .clean-earth {
+    filter: grayscale(0%);
+    transform: rotate(360deg) scale(1.1);
+  }
+
+  /* Confetti leaves */
+  .leaf {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    background-size: cover;
+    animation: fall linear forwards;
+  }
+
+  @keyframes fall {
+    from { top: -50px; transform: rotate(0deg); }
+    to { top: 100vh; transform: rotate(360deg); }
+  }
+
+  /* Result Screen */
+  #result-screen {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255,255,255,0.95);
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+  }
+
+  .definition-box {
+    background: #E8F5E9;
+    border-radius: 10px;
+    padding: 15px 25px;
+    margin-top: 15px;
+    max-width: 700px;
   }
 </style>
 </head>
 <body>
-  <h2>🧬 Mô phỏng quá trình tái bản DNA</h2>
-  <p>(1️⃣ Gyrase + Helicase → 2️⃣ Polymerase ×2 → 3️⃣ Ligase → 4️⃣ Hoàn tất)</p>
 
-  <script>
-  let bases = [];
-  const numBases = 15;
-  const spacing = 55;
-  const baseRadius = 14;
-  let gyraseX=-80, helicaseX=-60, poly1X=-120, poly2X=-120, ligaseX=-150;
-  let stage=0;
-  const speed = 0.6;
-  const colors = { A:'#ff7676', T:'#6caeff', C:'#1dd3b0', G:'#ffd93d' };
-  let glowTimer = 0;
-  let bgMusic, clickSound;
+<!-- 🔹 Start Screen -->
+<div id="start-screen">
+  <h1>Chiếc Khăn Nhiệm Màu – Giải Cứu Trái Đất Xanh 🌍</h1>
+  <p class="story">Trái Đất đang bị ô nhiễm! Các Nhà Điều Tra Môi Trường hãy hợp sức cứu lấy hành tinh xanh!</p>
+  <button onclick="startGame()">Bắt đầu nhiệm vụ</button>
+  <div id="earth-ticker" style="margin-top:30px;">
+    <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png" width="80">
+  </div>
+</div>
 
-  function preload(){
-    // Nhạc nền ambient và âm click nhẹ (sử dụng URL hợp lệ)
-    bgMusic = new Audio("https://cdn.pixabay.com/download/audio/2021/09/28/audio_8b2fbe223a.mp3?filename=soft-ambient-background-12821.mp3");
-    bgMusic.loop = true;
-    bgMusic.volume = 0.35;
+<!-- 🔹 Main Game -->
+<div id="game-container">
+  <div id="instruction">
+    <b>Hướng dẫn:</b> Hãy cùng đội của bạn viết ý kiến về các dạng ô nhiễm (Không khí, Nước, Đất, Âm thanh) ở bốn góc.
+    Sau đó, kết hợp năng lượng xanh và nêu biện pháp bảo vệ môi trường nhé!
+  </div>
 
-    clickSound = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_b5ffcd3972.mp3?filename=button-click-124467.mp3");
-    clickSound.volume = 0.4;
+  <div id="tablecloth">
+    <div class="zone" id="air-zone" style="grid-area: air;">
+      💨 <b>Không khí</b><br>
+      <textarea placeholder="Viết ý kiến của bạn…"></textarea><br>
+      <button onclick="completeZone('air')">Hoàn thành</button>
+    </div>
+
+    <div class="zone" id="water-zone" style="grid-area: water;">
+      💧 <b>Nước</b><br>
+      <textarea placeholder="Viết ý kiến của bạn…"></textarea><br>
+      <button onclick="completeZone('water')">Hoàn thành</button>
+    </div>
+
+    <div class="zone" id="soil-zone" style="grid-area: soil;">
+      🌍 <b>Đất</b><br>
+      <textarea placeholder="Viết ý kiến của bạn…"></textarea><br>
+      <button onclick="completeZone('soil')">Hoàn thành</button>
+    </div>
+
+    <div class="zone" id="noise-zone" style="grid-area: noise;">
+      🔊 <b>Âm thanh</b><br>
+      <textarea placeholder="Viết ý kiến của bạn…"></textarea><br>
+      <button onclick="completeZone('noise')">Hoàn thành</button>
+    </div>
+
+    <div class="zone" id="center-zone">
+      <img id="earth-img" src="https://cdn-icons-png.flaticon.com/512/427/427735.png" alt="Earth">
+      <div id="combined-ideas"></div>
+      <button id="combine-btn" onclick="combineIdeas()">Kết hợp năng lượng xanh 🌿</button>
+      <div id="solution-phase" style="display:none;">
+        <p><b>Giai đoạn 2:</b> Hãy đề xuất biện pháp bảo vệ môi trường 🌱</p>
+        <textarea id="solution-text" placeholder="Viết biện pháp của nhóm..."></textarea><br>
+        <button id="submit-solution-btn" onclick="submitFinal()">Nộp bài</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🔹 Result Screen -->
+<div id="result-screen">
+  <h2>Kết quả nhiệm vụ</h2>
+  <p id="result-message"></p>
+  <div class="definition-box">
+    <b>Khái niệm:</b> Ô nhiễm môi trường là sự biến đổi tính chất vật lí, hóa học, sinh học của thành phần môi trường không phù hợp với quy chuẩn kĩ thuật môi trường, tiêu chuẩn môi trường gây ảnh hưởng xấu đến sức khoẻ con người, sinh vật và tự nhiên.
+  </div>
+  <button onclick="location.reload()">Chơi lại 🔁</button>
+</div>
+
+<!-- 🔊 Sounds -->
+<audio id="click-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7c89d43a1d.mp3?filename=click-124467.mp3"></audio>
+<audio id="cheer-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_730c6b82e0.mp3?filename=success-1-6297.mp3"></audio>
+
+<script>
+let completed = {air:false, water:false, soil:false, noise:false};
+
+function startGame(){
+  document.getElementById("start-screen").style.display = "none";
+  document.getElementById("game-container").style.display = "flex";
+}
+
+function completeZone(zone){
+  document.getElementById("click-sound").play();
+  const z = document.getElementById(zone+"-zone");
+  z.classList.add("completed");
+  z.querySelector("button").disabled = true;
+  completed[zone] = true;
+  if(Object.values(completed).every(v => v)) {
+    document.getElementById("combine-btn").style.display = "inline-block";
   }
+}
 
-  function setup() {
-    createCanvas(1150, 560);
-    textFont("Segoe UI");
-    initDNA();
-    bgMusic.play().catch(()=>{});
+// Khi kết hợp năng lượng xanh
+function combineIdeas(){
+  document.getElementById("click-sound").play();
+  const ideas = [];
+  for(let z in completed){
+    const text = document.getElementById(z+"-zone").querySelector("textarea").value.trim();
+    ideas.push(text);
   }
+  const combinedDiv = document.getElementById("combined-ideas");
+  combinedDiv.innerHTML = "<b>Ý kiến nhóm:</b><br>" + ideas.join("<br>➡️ ");
+  document.getElementById("earth-img").classList.add("clean-earth");
 
-  function initDNA() {
-    bases=[];
-    const seq=['A','T','G','C','C','A','T','G','A','C','T','T','A','G','C'];
-    for(let i=0;i<numBases;i++){
-      bases.push({
-        base:seq[i], comp:complement(seq[i]),
-        open:false, newTop:false, newBottom:false,
-        pairedTop:false, pairedBottom:false, joined:false
-      });
-    }
+  // Hiện giai đoạn 2
+  document.getElementById("combine-btn").style.display = "none";
+  setTimeout(()=>{ 
+    document.getElementById("solution-phase").style.display = "block"; 
+  }, 2000);
+}
+
+// Nộp bài - chấm điểm
+function submitFinal(){
+  const solution = document.getElementById("solution-text").value.trim();
+  const allIdeas = [...document.querySelectorAll("textarea")].map(t=>t.value).join(" ").toLowerCase();
+
+  const fullText = (allIdeas + " " + solution).toLowerCase();
+
+  const keywords = [
+    "rác", "rác thải", "khói", "bụi", "bụi bẩn",
+    "nước bẩn", "nước thải", "ô nhiễm", "ảnh hưởng",
+    "con người", "thiên nhiên", "môi trường"
+  ];
+
+  let score = 0;
+  keywords.forEach(k => { if(fullText.includes(k)) score += 10; });
+  if(score > 100) score = 100;
+
+  showResult(score);
+}
+
+// Hiển thị kết quả
+function showResult(score){
+  document.getElementById("result-screen").style.display = "flex";
+  let msg = "";
+  if(score >= 80){
+    msg = "🟢 Tuyệt vời! Trái Đất hồi sinh rực rỡ!";
+    document.getElementById("cheer-sound").play();
+    launchConfetti();
+  } else if(score >= 50){
+    msg = "🟡 Trái Đất đang được cứu, cố gắng thêm nhé!";
+  } else {
+    msg = "🔴 Trái Đất vẫn đang nguy cấp, hãy điều tra lại!";
   }
+  document.getElementById("result-message").innerText = msg;
+}
 
-  function complement(b){ return b==='A'?'T':b==='T'?'A':b==='C'?'G':'C'; }
-
-  function draw(){
-    background(0,20,40);
-    glowTimer += 0.1;
-    translate(width/2-(numBases*spacing)/2, height/2);
-    updateStage();
-
-    for(let i=0;i<numBases;i++){
-      const x=i*spacing;
-      const b=bases[i];
-
-      // Mạch gốc
-      drawBase(x,-40,b.base,colors[b.base]);
-      drawBase(x, 40,b.comp,colors[b.comp]);
-
-      if(!b.open) drawHydrogenCurved(x,-40,40,b.base,b.comp);
-
-      stroke(80);
-      if(i<numBases-1){
-        line(x+baseRadius+4,-40,x+spacing-(baseRadius+4),-40);
-        line(x+baseRadius+4, 40,x+spacing-(baseRadius+4), 40);
-      }
-
-      // Mạch mới trên
-      if(b.newTop){
-        let newColor = colors[complement(b.base)];
-        const glow = 80 + 60*sin(glowTimer);
-        drawBaseGlow(x,-85,complement(b.base),newColor,glow);
-        if(b.pairedTop) drawHydrogenCurved(x,-85,-40,b.base,complement(b.base));
-        if(i<numBases-1 && bases[i+1].newTop){
-          stroke(newColor);
-          line(x+baseRadius+4,-85,x+spacing-(baseRadius+4),-85);
-        }
-      }
-
-      // Mạch mới dưới
-      if(b.newBottom){
-        let newColor = colors[complement(b.comp)];
-        const glow = 80 + 60*sin(glowTimer);
-        drawBaseGlow(x,85,complement(b.comp),newColor,glow);
-        if(b.pairedBottom) drawHydrogenCurved(x,85,40,b.comp,complement(b.comp));
-        if(i<numBases-1 && bases[i+1].newBottom){
-          stroke(newColor);
-          line(x+baseRadius+4,85,x+spacing-(baseRadius+4),85);
-        }
-      }
-
-      // Ligase nối
-      if(b.joined && i<numBases-1){
-        stroke(255,200,80);
-        strokeWeight(2);
-        line(x+baseRadius+4,85,x+spacing-(baseRadius+4),85);
-        strokeWeight(1);
-      }
-    }
-
-    drawEnzymes();
-
-    // Giai đoạn
-    resetMatrix();
-    textAlign(CENTER);
-    textSize(18);
-    fill("#6cfaff");
-    let stageText = "";
-    if(stage===0) stageText = "Giai đoạn 1️⃣: Gyrase và Helicase đang tháo xoắn, tách hai mạch DNA.";
-    else if(stage===1) stageText = "Giai đoạn 2️⃣: Hai Polymerase tổng hợp mạch bổ sung và hình thành liên kết hiđrô.";
-    else if(stage===2) stageText = "Giai đoạn 3️⃣: Ligase nối các đoạn Okazaki, hoàn thiện mạch chậm.";
-    else stageText = "Giai đoạn 4️⃣: Hoàn tất! Hai phân tử DNA mới được tạo ra (bán bảo toàn).";
-    text(stageText, width/2, 60);
-
-    // Chiều
-    fill("#fff");
-    textSize(14);
-    text("3′", width/2-(numBases*spacing)/2-25, height/2-60);
-    text("5′", width/2+(numBases*spacing)/2+25, height/2-60);
-    text("5′", width/2-(numBases*spacing)/2-25, height/2+90);
-    text("3′", width/2+(numBases*spacing)/2+25, height/2+90);
+// Confetti xanh lá cây
+function launchConfetti(){
+  for(let i=0;i<40;i++){
+    const leaf = document.createElement('div');
+    leaf.classList.add('leaf');
+    leaf.style.backgroundImage = "url('https://cdn-icons-png.flaticon.com/512/2909/2909765.png')";
+    leaf.style.left = Math.random()*window.innerWidth + 'px';
+    leaf.style.animationDuration = (4 + Math.random()*3) + 's';
+    document.body.appendChild(leaf);
+    setTimeout(()=>leaf.remove(),8000);
   }
-
-  function drawBase(x,y,label,col){
-    stroke(col);
-    strokeWeight(2);
-    fill(col+"33");
-    ellipse(x,y,baseRadius*2,baseRadius*2);
-    noStroke();
-    fill(col);
-    textAlign(CENTER,CENTER);
-    textSize(12);
-    text(label,x,y);
-  }
-
-  function drawBaseGlow(x,y,label,col,glow){
-    noStroke();
-    fill(col + "22");
-    ellipse(x,y,baseRadius*2 + 10*sin(glowTimer),baseRadius*2 + 10*sin(glowTimer));
-    stroke(col);
-    strokeWeight(2);
-    fill(col + "33");
-    ellipse(x,y,baseRadius*2,baseRadius*2);
-    noStroke();
-    fill(col);
-    textAlign(CENTER,CENTER);
-    textSize(12);
-    text(label,x,y);
-  }
-
-  // Liên kết H không cắt nucleotide
-  function drawHydrogenCurved(x,y1,y2,b1,b2){
-    const nLines = (b1==='G'&&b2==='C')||(b1==='C'&&b2==='G') ? 3 : 2;
-    const offset = 3.5;
-    const totalWidth = (nLines - 1) * offset;
-    const startX = x - totalWidth / 2;
-    const pad = 4;
-    let yStart, yEnd;
-
-    if (y1 < y2) {
-      yStart = y1 + baseRadius + pad;
-      yEnd   = y2 - baseRadius - pad;
-    } else {
-      yStart = y1 - baseRadius - pad;
-      yEnd   = y2 + baseRadius + pad;
-    }
-
-    const midY = (yStart + yEnd) / 2;
-    const ctrlOffset = Math.abs(yEnd - yStart) / 3;
-
-    stroke(180,220,255);
-    strokeWeight(1.1);
-    noFill();
-
-    for (let i = 0; i < nLines; i++) {
-      const lx = startX + i * offset;
-      if (y1 < y2) {
-        bezier(lx, yStart, lx + 4, midY - ctrlOffset, lx - 4, midY + ctrlOffset, lx, yEnd);
-      } else {
-        bezier(lx, yStart, lx - 4, midY + ctrlOffset, lx + 4, midY - ctrlOffset, lx, yEnd);
-      }
-    }
-  }
-
-  function drawEnzymes(){
-    if(stage===0){
-      drawGlowCircle(gyraseX,-10,26,"#ff4747");
-      drawGlowCircle(helicaseX,10,26,"#b580ff");
-    } else if(stage===1){
-      drawGlowCircle(poly1X,-100,24,"#57a8ff");
-      drawGlowCircle(poly2X,100,24,"#57a8ff");
-    } else if(stage===2){
-      drawGlowCircle(ligaseX,85,26,"#ffc44d");
-    }
-  }
-
-  function drawGlowCircle(x,y,r,col){
-    noStroke();
-    fill(col+"33");
-    ellipse(x,y,r+10);
-    fill(col);
-    ellipse(x,y,r);
-    stroke(col);
-    strokeWeight(1.2);
-  }
-
-  function updateStage(){
-    if(stage===0){
-      gyraseX+=speed; helicaseX+=speed;
-      const idx=int(helicaseX/spacing);
-      if(idx>=0&&idx<numBases){ bases[idx].open=true; clickSound.play(); }
-      if(helicaseX>numBases*spacing){ stage=1; poly1X=0; poly2X=0; }
-    }
-    else if(stage===1){
-      poly1X+=speed; poly2X+=speed;
-      const i1=int(poly1X/spacing), i2=int(poly2X/spacing);
-      if(i1>=0&&i1<numBases){ bases[i1].newTop=true; bases[i1].pairedTop=true; clickSound.play(); }
-      if(i2>=0&&i2<numBases){ bases[i2].newBottom=true; bases[i2].pairedBottom=true; clickSound.play(); }
-      if(poly1X>numBases*spacing){ stage=2; ligaseX=0; }
-    }
-    else if(stage===2){
-      ligaseX+=speed;
-      const j=int(ligaseX/spacing);
-      if(j>=0&&j<numBases){ bases[j].joined=true; clickSound.play(); }
-      if(ligaseX>numBases*spacing) stage=3;
-    }
-  }
-  </script>
-
-  <footer>✨ Design by Fubao ✨</footer>
+}
+</script>
 </body>
 </html>
